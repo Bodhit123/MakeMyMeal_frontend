@@ -1,0 +1,39 @@
+/* pass css class to the component or we can use inbuilt css classname like below......Toastify__toast{ */
+.Toastify__toast {
+    font-size: 16px;
+    text-transform: capitalize;
+    position: relative;
+    font-weight: 500;
+}
+
+.Toastify__toast-container {
+    max-width: 450px;
+    /* Adjust maximum width as needed */
+    padding: 10px;
+    /* Add padding to create space around the content */
+}
+
+.Toastify__close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white background */
+    color: rgb(53, 184, 231) !important; /* button color */
+    padding: 8px;
+    /* Adjust padding as needed */
+    transform: scale(1.5);
+    /* Maintain the size */
+}
+
+
+.Toastify__close-button:hover {
+    color: rgba(255,255,255,1);
+}
+
+.Toastify__close-button:focus {
+    outline: none;
+    /* Remove outline on focus */
+}
