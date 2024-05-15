@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
 import flatpickr from "flatpickr";
-import { BaseUrl } from "../helper/Constant"
+import { BaseUrl } from "../helper/Constant";
 import rangePlugin from "flatpickr/dist/plugins/rangePlugin";
-import { countValidDates } from "../helper/Holidays";
+import { countValidDates,HolidaysAndWeekends } from "../helper/Holidays";
+import Swal from "sweetalert2";
 
-export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
+
+export function BookingForm({ IsModelOpen, setModalOpen }) {
   const [employeeData, setEmployeeData] = useState(
     JSON.parse(localStorage.getItem("employees")) ?? []
   );
@@ -17,15 +19,17 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
     BookingCategory: { Lunch: true, Dinner: false },
     isWeekend: false,
     Dates: {
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
     },
     Department: "",
     Notes: "",
     MealCount: 0,
     Employees: [],
   });
- console.log(employeeData)
+
+  console.log(employeeData);
+
   const handleSelectAllEmployees = (e) => {
     const { checked } = e.target;
     setSelectAllEmployees(checked);
@@ -33,7 +37,7 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
     if (checked) {
       setFormData((prev) => ({
         ...prev,
-        Employees: [...employeeData], // Add all employee objects to the array
+        Employees: [...employeeData.map((emp) => emp._id)], // Add all employee objects to the array
       }));
     } else {
       setFormData((prev) => ({
@@ -43,25 +47,25 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
     }
   };
 
-  // Updated onChangeHandler function
+
   const onChangeHandler = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
       if (name === "employee") {
         const selectedEmployee = employeeData.find(
-          (employee) => employee.emp_code === value
+          (employee) => employee._id === value
         );
 
         if (checked) {
           setFormData((prev) => ({
             ...prev,
-            Employees: [...prev.Employees, selectedEmployee],
+            Employees: [...prev.Employees, selectedEmployee._id],
           }));
         } else {
           setFormData((prev) => ({
             ...prev,
-            Employees: prev.Employees.filter((emp) => emp.emp_code !== value),
+            Employees: prev.Employees.filter((id) => id !== value),
           }));
         }
       } else {
@@ -91,6 +95,13 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
   const formSubmitHandler = async (e) => {
     e.preventDefault();
     setModalOpen(false);
+    Swal.fire({
+      position: "top-end",
+      icon: "success",
+      title: "Your work has been saved",
+      showConfirmButton: false,
+      timer: 1500,
+    });
   };
 
   useEffect(() => {
@@ -100,24 +111,27 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
       mode: "range",
       dateFormat: "Y-m-d", // Set the date display format
       onChange: (selectedDates, dateStr, instance) => {
-        const startDate = new Date(dateStr);
-        const endDate = new Date(selectedDates[1]); // Get the last selected date as the end date
-        const disabledDates = instance.config.disable;
+        const start = new Date(dateStr);
+        const formattedStartDate = start.toISOString();
+        const end = new Date(selectedDates[1]);
+        const formattedEndDate = start.toISOString();
+        //only give values if disableDates property passed to flatPickerInstance
+        // const disabledDates = instance.config.disable; 
 
         // Get the count of valid dates after removing disabled dates
-        const validDateCount = countValidDates(
-          startDate,
-          endDate,
-          disabledDates
+        const validCount = countValidDates(
+          start,
+          end,
+          HolidaysAndWeekends
         );
-
+         
         // Update the form data with the new selected dates and count
         setFormData((prev) => ({
           ...prev,
           Dates: {
-            startDate,
-            endDate,
-            DateCount: validDateCount, // Add the count to your form data
+            startDate:formattedStartDate,
+            endDate:formattedEndDate,
+            validDays:validCount, 
           },
         }));
       },
@@ -138,7 +152,7 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, // Include the Authorization header with the token
+                Authorization: `Bearer ${token}`, 
               },
             }
           );
@@ -345,11 +359,11 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
                                 className="checkbox__input"
                                 type="checkbox"
                                 name="employee"
-                                value={employee.emp_code}
+                                value={employee._id}
                                 checked={
                                   selectAllEmployees ||
                                   formData.Employees.some(
-                                    (emp) => emp.emp_code === employee.emp_code
+                                    (id) => id === employee._id
                                   )
                                 }
                                 onChange={(e) => onChangeHandler(e)}
@@ -388,6 +402,6 @@ export const BookingForm = ({ IsModelOpen, setModalOpen }) => {
       </div>
     </div>
   );
-};
+}
 
 export default BookingForm;

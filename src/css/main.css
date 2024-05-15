@@ -18,6 +18,20 @@
   cursor: pointer;
 }
 
+.table.dataTable thead th {
+  text-decoration: none !important;
+  border-bottom-width: 0;
+  font-weight: bold;
+  font-style: normal;
+  font-size: 16px;
+  padding: 15px 5px;
+}
+
+.bi-trash{
+  color: #E91E63;
+  cursor: pointer;
+}
+
 ul.dropdown-menu.settings-menu.dropdown-menu-left {
   position: absolute;
   top: 45px;
@@ -45,7 +59,6 @@ ul.dropdown-menu.settings-menu.dropdown-menu-right {
 [class*=" icon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: "meal-admin" !important;
-  speak: never;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
@@ -452,7 +465,7 @@ tr,
 td,
 th {
   border-color: inherit;
-  border-style: solid;
+  border-style: none;
   border-width: 0;
 }
 
@@ -6093,6 +6106,7 @@ fieldset:disabled .btn {
   overflow-y: auto;
   outline: 0;
   backdrop-filter: brightness(0.5);
+  -webkit-backdrop-filter: brightness(0.5);
 }
 
 .modal-dialog {
@@ -11849,6 +11863,7 @@ table.dataTable {
 table.dataTable td,
 table.dataTable th {
   box-sizing: content-box;
+  padding: 15px;
 }
 
 table.dataTable td.dataTables_empty,

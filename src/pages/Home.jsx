@@ -1,9 +1,77 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import ButtonWithDialog from "../components/ButtonWithDialog";
 import Navbar from "../components/Navbar";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const Home = () => {
+  const [bookings, setBookings] = useState([
+    {
+      id: 1,
+      employeeCode: "E123",
+      employeeName: "John Doe",
+      department: "Marketing",
+      mealType: "Lunch",
+      totalMealsBooked: 2,
+      mealDates: "2024-05-15, 2024-05-16",
+    },
+    {
+      id: 2,
+      employeeCode: "E456",
+      employeeName: "Jane Smith",
+      department: "HR",
+      mealType: "Dinner",
+      totalMealsBooked: 1,
+      mealDates: "2024-05-15",
+    },
+    {
+      id: 3,
+      employeeCode: "E789",
+      employeeName: "Alice Johnson",
+      department: "IT",
+      mealType: "Breakfast",
+      totalMealsBooked: 3,
+      mealDates: "2024-05-14, 2024-05-15, 2024-05-16",
+    },
+    {
+      id: 4,
+      employeeCode: "E789",
+      employeeName: "Alice Johnson",
+      department: "IT",
+      mealType: "Breakfast",
+      totalMealsBooked: 3,
+      mealDates: "2024-05-14, 2024-05-15, 2024-05-16",
+    },
+    {
+      id: 5,
+      employeeCode: "E789",
+      employeeName: "Alice Johnson",
+      department: "IT",
+      mealType: "Breakfast",
+      totalMealsBooked: 3,
+      mealDates: "2024-05-14, 2024-05-15, 2024-05-16",
+    },
+  ]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [bookingsPerPage, setBookingsPerPage] = useState(3); // Number of bookings per page
+
+  // useEffect(() => {
+  //   fetchBookings(currentPage);
+  // }, [currentPage]);
+
+  // const fetchBookings = async (page) => {
+  //   try {
+  //     const response = await fetch(
+  //       `your_api_endpoint_here?page=${currentPage}&perPage=${bookingsPerPage}`
+  //     );
+  //     setBookings(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching bookings:", error);
+  //   }
+  // };
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // console.log(currentPage);
   return (
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">
@@ -31,6 +99,63 @@ const Home = () => {
               Others
             </a>
           </div>
+          <div className="container container-fluid mt-5">
+            <table className="table table-responsive dataTable table-hover">
+              <thead className="bg-light">
+                <tr>
+                  <th>Employee Code</th>
+                  <th>Employee Name</th>
+                  <th>Department</th>
+                  <th>Meal Type</th>
+                  <th>Total Meals Booked</th>
+                  <th>Meal Dates</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Map through current bookings */}
+                {bookings
+                  .slice(
+                    (currentPage - 1) * bookingsPerPage,
+                    currentPage * bookingsPerPage
+                  )
+                  .map((booking) => (
+                    <tr key={booking.id}>
+                      <td>{booking.employeeCode}</td>
+                      <td>{booking.employeeName}</td>
+                      <td>{booking.department}</td>
+                      <td>{booking.mealType}</td>
+                      <td>{booking.totalMealsBooked}</td>
+                      <td>{booking.mealDates}</td>
+                      <td>
+                        <i className="bi bi-trash"></i>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <ul className="pagination">
+            {Array.from({
+              length: Math.ceil(bookings.length / bookingsPerPage),
+            }).map((_, index) => (
+              <li
+                key={index}
+                className={`page-item ${
+                  currentPage === index + 1 ? "active" : ""
+                }`}
+              >
+                <button
+                  onClick={() => paginate(index + 1)}
+                  className="page-link"
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <div className="footer">
@@ -113,6 +238,8 @@ const Home = () => {
                 </div>
               </form>
             </div>
+            {/* Start of Booking List */}
+            {/* End of Booking List */}
             <div className="modal-footer">
               <button
                 type="button"
