@@ -3,9 +3,8 @@ import { AuthContext } from "../Contexts/AuthContext";
 import flatpickr from "flatpickr";
 import { BaseUrl } from "../helper/Constant";
 import rangePlugin from "flatpickr/dist/plugins/rangePlugin";
-import { countValidDates,HolidaysAndWeekends } from "../helper/Holidays";
+import { countValidDates, HolidaysAndWeekends } from "../helper/Holidays";
 import Swal from "sweetalert2";
-
 
 export function BookingForm({ IsModelOpen, setModalOpen }) {
   const [employeeData, setEmployeeData] = useState(
@@ -46,7 +45,6 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
       }));
     }
   };
-
 
   const onChangeHandler = (e) => {
     const { name, value, type, checked } = e.target;
@@ -116,22 +114,18 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
         const end = new Date(selectedDates[1]);
         const formattedEndDate = start.toISOString();
         //only give values if disableDates property passed to flatPickerInstance
-        // const disabledDates = instance.config.disable; 
+        // const disabledDates = instance.config.disable;
 
         // Get the count of valid dates after removing disabled dates
-        const validCount = countValidDates(
-          start,
-          end,
-          HolidaysAndWeekends
-        );
-         
+        const validCount = countValidDates(start, end, HolidaysAndWeekends);
+
         // Update the form data with the new selected dates and count
         setFormData((prev) => ({
           ...prev,
           Dates: {
-            startDate:formattedStartDate,
-            endDate:formattedEndDate,
-            validDays:validCount, 
+            startDate: formattedStartDate,
+            endDate: formattedEndDate,
+            validDays: validCount,
           },
         }));
       },
@@ -152,7 +146,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, 
+                Authorization: `Bearer ${token}`,
               },
             }
           );
