@@ -1,0 +1,192 @@
+.fc .fc-daygrid-day-number {
+    text-decoration: none;
+}
+
+.fc-toolbar-chunk {
+    text-align: center;
+}
+
+.fc .fc-col-header-cell a {
+    color: rgba(0, 0, 0, 0.6);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.fc .fc-daygrid-day-number {
+    color: gray;
+}
+
+.fc .fc-daygrid-day-top {
+    display: flex;
+    flex-direction: row;
+}
+
+.fc-daygrid-day-frame {
+    max-height: 60px;
+    /* Adjust height as needed */
+    overflow: hidden;
+}
+
+/* Below css is useful for +n more links */
+.fc .fc-daygrid-more-link {
+    border-radius: 3px;
+    cursor: pointer;
+    line-height: 1;
+    margin-top: 1px;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 2px;
+    position: relative;
+    white-space: nowrap;
+    z-index: 100;
+    color: rgba(0, 115, 255, 0.6);
+    position: static;
+    display: block;
+}
+
+.fc-popover-body .fc-event.fc-event-draggable.fc-event-resizable.fc-event-start.fc-event-end.fc-event-past.fc-daygrid-event.fc-daygrid-block-event.fc-h-event .fc-event-main-frame {
+    width: 100% !important;
+}
+
+.fc .fc-daygrid-day-events {
+    margin-top: 0px;
+    background-color: transparent;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    align-items: center;
+    justify-content: center;
+    max-height: min-content;
+    box-sizing: border-box;
+    gap: 0.3px;
+}
+
+.fc .fc-daygrid-event-harness {
+    position: relative;
+    top: 40px;
+    left: 10px;
+    color: transparent;
+    width: max-content;
+    height: 100%;
+    border: 0;
+    margin: 0px;
+    display: contents;
+}
+
+.fc-event .fc-event-main {
+    position: relative;
+    z-index: 2;
+    width: max-content;
+}
+
+.fc-h-event {
+    background-color: transparent;
+    border: none;
+}
+
+.fc-h-event .fc-event-main-frame {
+    background-color: blueviolet;
+    border-width: 0px;
+    border-color: #F2F3F7;
+    text-align: center;
+    width: 2.5rem;
+    /* border: 1px solid burlywood; */
+    height: 2.5rem;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+/* Employee booking style */
+.fc-h-event.employee-booking .fc-event-main-frame {
+    background-color:  #7A58BF
+}
+
+/* Rise booking style */
+.fc-h-event.rise-booking .fc-event-main-frame {
+    background-color: #E2553E /* Yellow */
+}
+
+/* Others booking style */
+.fc-h-event.others-booking .fc-event-main-frame {
+    background-color: #6FCB1F /* Red */
+}
+/*  */
+
+.fc-h-event .fc-event-title {
+    display: inline-block;
+    left: 0px;
+    position: relative;
+    top: 17%;
+    max-width: 100%;
+    overflow: hidden;
+    right: 0px;
+    vertical-align: top;
+    color: azure;
+    font-size: large;
+}
+
+
+/* Media queries for max-width 805px */
+@media (max-width: 860px) {
+
+    .fc .fc-daygrid-day-number {
+        text-decoration: none;
+        font-size: 10px;
+    }
+
+    .fc-h-event .fc-event-main-frame {
+        width: 1.5rem;
+        /* Adjust size to fit within smaller cells */
+        height: 1.5rem;
+        /* Adjust size to fit within smaller cells */
+        border-radius: 0;
+        padding-bottom: 10px;
+    }
+
+    .fc-h-event .fc-event-title-container {
+        font-size: small;
+        /* Adjust text size */
+    }
+
+    .fc .fc-daygrid-day-events {
+        left: 5px;
+        top: -5px;
+        display: flex;
+    }
+
+    .fc .fc-daygrid-event-harness {
+        top: 30px;
+        left: 5px;
+    }
+
+    .fc .fc-daygrid-more-link {
+        z-index: 400;
+    }
+
+    .fc-h-event .fc-event-title {
+        font-size: small;
+        /* Adjust text size */
+        top: 25%;
+        /* Adjust vertical positioning */
+    }
+}
+
+
+@media (max-width: 585px) {
+    .fc-h-event .fc-event-main-frame {
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 0;
+        padding-bottom: 15px;
+    }
+
+    .fc .fc-daygrid-day-number {
+        text-decoration: none;
+        font-size: 10px;
+    }
+
+}

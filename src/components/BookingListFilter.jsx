@@ -1,15 +1,15 @@
 import React, { useState, useContext, useEffect, useCallback } from "react";
 import { MonthNames, BaseUrl } from "../helper/Constant";
 import { AuthContext } from "../Contexts/AuthContext";
+import axios from "axios";
 
 const BookingListFilter = ({ setBookings, usertype }) => {
-  const { authData } = useContext(AuthContext);
-  const token = authData ? authData.token : null;
+  const token = useContext(AuthContext).authData?.token;
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("All");
   const currentDate = new Date();
   const [year, setYear] = useState(currentDate.getFullYear().toString());
-  const [month, setMonth] = useState(MonthNames[currentDate.getMonth()]);
+  const [month, setMonth] = useState(MonthNames[currentDate.getMonth()+1]); //because MonthNames array has one more string "all" at the index 0.
   const [filter, setFilter] = useState(false);
   console.log(year, month, department);
 
@@ -25,31 +25,26 @@ const BookingListFilter = ({ setBookings, usertype }) => {
       } else {
         url = `${BaseUrl}/booking/rise?year=${year}&month=${month}`;
       }
-      const response = await fetch(`${url}`, {
-        method: "GET",
+
+      const response = await axios.get(url, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        console.log(data.message.description);
-        setBookings([]);
-        return;
-      }
-
-      const fetchedResults = await response.json();
+      const fetchedResults = response.data;
       setBookings(fetchedResults.data.fetchedBookingResults);
       console.log(fetchedResults.data.fetchedBookingResults);
-      // localStorage.setItem(
-      //   "bookings",
-      //   JSON.stringify(fetchedResults.data.fetchedBookingResults)
-      // );
+
       setFilter(false);
     } catch (error) {
-      console.log("Error fetching bookings:", error);
+      if (error.response) {
+        console.log(error.response.data.message.description);
+      } else {
+        console.log("Error fetching bookings:", error.message);
+      }
+      setBookings([]);
     }
   }, [department, month, setBookings, token, usertype, year]);
 
@@ -89,6 +84,8 @@ const BookingListFilter = ({ setBookings, usertype }) => {
             <option value="Analytics">Analytics</option>
             <option value="BA">BA</option>
             <option value="FrontEnd">FrontEnd</option>
+            <option value="Analytics">Backend nodejs</option>
+            <option value="Analytics">Backend Java</option>
           </select>
           <select
             className="form-select form-select-lg m-1 border-1 rounded-3"

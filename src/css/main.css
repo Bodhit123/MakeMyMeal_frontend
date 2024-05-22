@@ -11,8 +11,24 @@
 }
 
 .custom-placeholder::placeholder {
-  font-size: 18px !important; 
+  font-size: 17px !important; 
   color: #999; 
+}
+
+.table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td ,
+.table-bordered tr {
+  border: 1px solid #dee2e6;
+}
+
+table.dataTable.nowrap th, table.dataTable.nowrap td {
+  white-space: wrap !important;
+  max-width: 115px !important;
+  min-width: 115px !important;
 }
 
 .dropdown {
@@ -20,7 +36,7 @@
 }
 
 table.dataTable td{
-  padding-left: 6px !important;
+  padding-left: 10px !important;
   font-size: 16px;
 }
 
@@ -12079,7 +12095,7 @@ table.table-bordered.dataTable td:last-child {
 
 table.table-bordered.dataTable tbody th,
 table.table-bordered.dataTable tbody td {
-  border-bottom-width: 0;
+  border-bottom-width: ;
 }
 
 div.dataTables_scrollHead table.table-bordered {

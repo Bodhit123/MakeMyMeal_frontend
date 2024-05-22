@@ -2,14 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import store from "./app/store";
+import { Provider } from "react-redux";
 import reportWebVitals from "./reportWebVitals";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import the CSS for react-toastify
 
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <>
+  <Provider store={store}>
+    <App />
     <ToastContainer
       position="top-center"
       autoClose={5000}
@@ -20,8 +22,7 @@ root.render(
       draggable
       theme="dark"
     />
-    <App />
-  </>
+  </Provider>
 );
 
 // If you want to start measuring performance in your app, pass a function

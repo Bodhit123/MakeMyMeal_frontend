@@ -12,6 +12,7 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [FormData, setFormData] = useState({ email: "", password: "" });
   const history = useNavigate();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const authContext = useContext(AuthContext);
 
   const FormSubmitHandler = async (e) => {
@@ -60,6 +61,10 @@ function Login() {
     setFormData((prev) => {
       return { ...prev, [name]: value };
     });
+  };
+  
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible((prev) => !prev);
   };
 
   return (
@@ -113,13 +118,15 @@ function Login() {
                     id="password-field"
                     name="password"
                     className="form-control"
-                    type="password"
+                    type={isPasswordVisible ? "text" : "password"}
                     value={FormData.password}
                     onChange={(e) => HandleChange(e)}
                   />
                   <span
-                    toggle="#password-field"
-                    className="icon-eye-close field-icon toggle-password"
+                    onClick={togglePasswordVisibility}
+                    className={`field-icon toggle-password ${
+                      isPasswordVisible ? "icon-eye-open" : "icon-eye-close"
+                    }`}
                   ></span>
                 </div>
               </div>

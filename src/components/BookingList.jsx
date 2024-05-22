@@ -1,20 +1,91 @@
-import React, { useState } from "react";
+import axios from "axios";
+import { BaseUrl } from "../helper/Constant";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../Contexts/AuthContext";
+import { useDispatch } from "react-redux";
+import Swal from "sweetalert2";
+import Moment from "moment";
+import { extendMoment } from "moment-range";
+import { ErrorToast, SuccessToast } from "./Toast";
+import { deleteBooking } from "../app/bookingSlice";
 
-const BookingList = ({ usertype, bookings}) => {
+const BookingList = ({ bookings, usertype, setBookings }) => {
+  const dispatch = useDispatch();
+  const moment = extendMoment(Moment);
+  const token = useContext(AuthContext).authData?.token;
   const [currentPage, setCurrentPage] = useState(1);
   const [bookingsPerPage] = useState(3);
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const Others = ["BookingCategory", "MealCounts", "Notes"];
+  const Others = [
+    "BookingCategory",
+    "Meal Counts",
+    "Notes",
+    "Meal Dates",
+    "Actions",
+  ];
   const Employees = [
     "Employee Code",
     "Employee Name",
     "Department",
     "Meal Type",
     "Total Meals Booked",
-    "Meal dates",
+    "Meal Dates",
     "Actions",
   ];
-  
+  console.log(bookings);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const deleteBookingHandler = async (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your booking has been deleted.",
+          icon: "success",
+        });
+        deleteApi(id);
+      }
+    });
+  };
+
+  const deleteApi = async (id) => {
+    try {
+      const result = await axios.delete(`${BaseUrl}/booking/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = result.data;
+      SuccessToast("Booking Deleted Successfully", {
+        position: "top-right",
+        style: { fontSize: "16px", fontWeight: "500" },
+      });
+      setBookings((prevBookings) =>
+        prevBookings.filter((booking) => booking._id !== id)
+      );
+      dispatch(
+        deleteBooking({ type: data.BookingPerson, count: data.TotalMeals })
+      );
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      ErrorToast(
+        error.response?.data.message.description || "Failed to delete booking ",
+        {
+          position: "top-right",
+        }
+      );
+    }
+  };
+
   if (bookings.length === 0) {
     return (
       <div className="alert alert-info alert alert-dismissible ">
@@ -40,29 +111,52 @@ const BookingList = ({ usertype, bookings}) => {
                 (currentPage - 1) * bookingsPerPage,
                 currentPage * bookingsPerPage
               )
-              .map((booking, index) => (
-                <tr key={index}>
-                  {usertype === "Employee" ? (
-                    <>
-                      <td>{booking.EmployeeDetails[0].emp_code}</td>
-                      <td>{booking.EmployeeDetails[0].emp_name}</td>
-                      <td>{booking.EmployeeDetails[0].dept_name}</td>
-                      <td>{booking.BookingCategory}</td>
-                      <td>{booking.MealCounts}</td>
-                      <td>{booking.mealDates}</td>
-                    </>
-                  ) : (
-                    <>
-                      {Others.map((field, index) => (
-                        <td key={index}>{booking[field]}</td>
-                      ))}
-                    </>
-                  )}
-                  <td>
-                    <i className="bi bi-trash"></i>
-                  </td>
-                </tr>
-              ))}
+              .map((booking, index) => {
+                const {startDate,endDate} = booking.Dates;
+                const monthRange = moment.range(moment(startDate).startOf('month'),moment(startDate).endOf('month'))
+                let bookingRange;
+                if(monthRange.contains(endDate,{excludeEnd:false,excludeStart:false})){
+                   bookingRange = moment.range(moment(startDate),moment(endDate))
+                }
+                else bookingRange = moment.range(moment(startDate),moment(startDate).endOf('month'))
+                const dayNumbers = Array.from(bookingRange.by("day")).map(
+                  (date) => date.format("DD")
+                );
+                console.log(monthRange.start.format("MMMM-DD"),monthRange.end.format("MMMM-DD"), bookingRange.start.format("MMMM-DD"),bookingRange.end.format("MMMM-DD"));
+                return (
+                  <tr key={index}>
+                    {usertype === "Employee" ? (
+                      <>
+                        <td>{booking.EmployeeDetails[0].emp_code}</td>
+                        <td>{booking.EmployeeDetails[0].emp_name}</td>
+                        <td>{booking.EmployeeDetails[0].dept_name}</td>
+                        <td>{booking.BookingCategory}</td>
+                        <td>{booking.MealCounts}</td>
+                        <td>{dayNumbers.join(", ")}</td>
+                        <td>
+                          <i
+                            className="bi bi-trash"
+                            onClick={(e) => deleteBookingHandler(booking._id)}
+                          ></i>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td>{booking.BookingCategory}</td>
+                        <td>{booking.MealCounts}</td>
+                        <td>{booking.Notes}</td>
+                        <td> {dayNumbers.join(", ")} </td>
+                        <td>
+                          <i
+                            className="bi bi-trash"
+                            onClick={(e) => deleteBookingHandler(booking._id)}
+                          ></i>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </section>

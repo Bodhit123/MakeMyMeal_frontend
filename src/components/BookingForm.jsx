@@ -1,18 +1,20 @@
+import axios from "axios";
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
 import flatpickr from "flatpickr";
+import { useDispatch } from "react-redux";
+import { addBooking } from "../app/bookingSlice";
 import { BaseUrl } from "../helper/Constant";
 import rangePlugin from "flatpickr/dist/plugins/rangePlugin";
-import { countValidDates, HolidaysAndWeekends } from "../helper/Holidays";
-import Swal from "sweetalert2";
+import { SuccessToast, ErrorToast } from "../components/Toast";
 
 export function BookingForm({ IsModelOpen, setModalOpen }) {
+  const dispatch = useDispatch();
   const [employeeData, setEmployeeData] = useState(
     JSON.parse(localStorage.getItem("employees")) ?? []
   );
   const [selectAllEmployees, setSelectAllEmployees] = useState(false);
-  const { authData } = useContext(AuthContext);
-  const token = authData ? authData.token : null;
+  const token = useContext(AuthContext).authData?.token;
   const [formData, setFormData] = useState({
     BookingPerson: { Employee: true, Rise: false, Others: false },
     BookingCategory: { Lunch: true, Dinner: false },
@@ -23,11 +25,9 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
     },
     Department: "",
     Notes: "",
-    MealCount: 0,
+    MealCounts: 1,
     Employees: [],
   });
-
-  console.log(employeeData);
 
   const handleSelectAllEmployees = (e) => {
     const { checked } = e.target;
@@ -92,86 +92,101 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
 
   const formSubmitHandler = async (e) => {
     e.preventDefault();
-    setModalOpen(false);
-    Swal.fire({
-      position: "top-end",
-      icon: "success",
-      title: "Your work has been saved",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-  };
+    try {
+      const { BookingPerson, BookingCategory, Department, ...rest } = formData;
+      const bookingPersonKey = Object.entries(BookingPerson).find(([key, value]) => value === true)?.[0];
+      const bookingCategoryKey = Object.entries(BookingCategory).find(([key, value]) => value === true)?.[0];
+  
+      const result = await axios.post(`${BaseUrl}/booking`, {
+        BookingPerson: bookingPersonKey,
+        BookingCategory: bookingCategoryKey,
+        ...rest,
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = result.data
+      SuccessToast("Booking Done Successfully", {
+        position: "top-right",
+        style: { fontSize: "16px", fontWeight: "500" },
+      });
+      dispatch(addBooking({ type: data.BookingPerson, count: data.TotalMeals }));
 
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      ErrorToast(error.response?.data.message.description || "Failed to submit form", {
+        position: "top-right",
+      });
+    } finally {
+      setModalOpen(false);
+    }
+  };
+  //flatPicker date range selection is done here
   useEffect(() => {
     const flatpickrInstance = flatpickr("#demoDate", {
       plugins: [new rangePlugin({ input: "#endDate" })],
       minDate: "today",
-      mode: "range",
+      altInput: true,
+      altFormat: "F j, Y",
+      // mode: "range",
       dateFormat: "Y-m-d", // Set the date display format
       onChange: (selectedDates, dateStr, instance) => {
-        const start = new Date(dateStr);
-        const formattedStartDate = start.toISOString();
+        const start = new Date(selectedDates[0]);
         const end = new Date(selectedDates[1]);
-        const formattedEndDate = start.toISOString();
         //only give values if disableDates property passed to flatPickerInstance
         // const disabledDates = instance.config.disable;
-
+        
         // Get the count of valid dates after removing disabled dates
-        const validCount = countValidDates(start, end, HolidaysAndWeekends);
+        // const validCount = countValidDates(start, end, HolidaysAndWeekends);
 
         // Update the form data with the new selected dates and count
         setFormData((prev) => ({
           ...prev,
           Dates: {
-            startDate: formattedStartDate,
-            endDate: formattedEndDate,
-            validDays: validCount,
+            startDate: start,
+            endDate: end,
+            // validDays: validCount,
           },
         }));
       },
     });
-
+    
     return () => {
       flatpickrInstance.destroy();
     };
   }, []);
-
+  
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const fetchEmployee = async (searchQuery) => {
-        try {
-          const response = await fetch(
-            `${BaseUrl}/employee/?searchQuery=${searchQuery}&limit=4`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch employee data");
+    const timer = setTimeout(async () => {
+      try {
+        const response = await axios.get(
+          `${BaseUrl}/employee/?searchQuery=${formData.Department}&limit=4`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-
-          const result = await response.json();
-          setEmployeeData(result.data);
-          localStorage.setItem("employees", JSON.stringify(result.data));
-        } catch (error) {
-          console.error("Error fetching employee data:", error);
-        }
-      };
-
-      fetchEmployee(formData.Department);
+        );
+        
+        const result = response.data;
+        setEmployeeData(result.data);
+        localStorage.setItem("employees", JSON.stringify(result.data));
+      } catch (error) {
+        console.error("Error fetching employee data:", error);
+      }
     }, 1000);
-
+    
     return () => {
       clearTimeout(timer);
       localStorage.removeItem("employees");
     };
   }, [formData.Department, token]);
-  console.log(formData);
+  
+  console.log(formData)
   return (
     <div>
       <div
@@ -198,7 +213,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
                 onClick={() => setModalOpen(false)}
               ></button>
             </div>
-            <div className="modal-body">
+            <form className="modal-body">
               <div className="form-group custom-radio">
                 <label>Select Category</label>
                 <div className="d-flex align-content-center justify-content-start">
@@ -312,9 +327,9 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="100"
-                  name="MealCount"
-                  value={formData.MealCount || 1}
+                  name="MealCounts"
+                  placeholder=""
+                  value={formData.MealCounts}
                   onChange={(e) => onChangeHandler(e)}
                 />
               </div>
@@ -374,7 +389,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </form>
             <div className="modal-footer">
               <button
                 type="button"
@@ -384,7 +399,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
                 Cancel
               </button>
               <button
-                type="button"
+                type="submit"
                 onClick={(e) => formSubmitHandler(e)}
                 className="btn btn-primary"
               >
