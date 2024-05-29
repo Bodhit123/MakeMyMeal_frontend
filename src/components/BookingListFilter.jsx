@@ -9,13 +9,20 @@ const BookingListFilter = ({ setBookings, usertype }) => {
   const [department, setDepartment] = useState("All");
   const currentDate = new Date();
   const [year, setYear] = useState(currentDate.getFullYear().toString());
-  const [month, setMonth] = useState(MonthNames[currentDate.getMonth()+1]); //because MonthNames array has one more string "all" at the index 0.
+  const [month, setMonth] = useState(MonthNames[currentDate.getMonth() + 1]);
   const [filter, setFilter] = useState(false);
-  console.log(year, month, department);
-
+  const [originalBookings, setOriginalBookings] = useState([]);
+  const [flag, setFlag] = useState(false);
   const handleButtonClick = () => {
     setFilter(true);
   };
+  console.log(flag)
+
+  useEffect(() => {
+    if ((month && !flag)) {
+      fetchData();
+    }
+  }, [usertype]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -34,9 +41,8 @@ const BookingListFilter = ({ setBookings, usertype }) => {
       });
 
       const fetchedResults = response.data;
-      setBookings(fetchedResults.data.fetchedBookingResults);
-      console.log(fetchedResults.data.fetchedBookingResults);
-
+      setOriginalBookings(fetchedResults.data.fetchedBookingResults); // Store fetched results
+      setBookings(fetchedResults.data.fetchedBookingResults); // Update the displayed bookings
       setFilter(false);
     } catch (error) {
       if (error.response) {
@@ -44,14 +50,28 @@ const BookingListFilter = ({ setBookings, usertype }) => {
       } else {
         console.log("Error fetching bookings:", error.message);
       }
+      setOriginalBookings([]);
       setBookings([]);
     }
   }, [department, month, setBookings, token, usertype, year]);
 
-  // useEffect(() => {
-  //   fetchData();
-  //   return () => localStorage.removeItem("bookings");
-  // }, [fetchData]);
+
+  useEffect(() => {
+    if (search.trim() === "") {
+      setBookings(originalBookings); // Reset to original bookings when search is cleared
+    } else {
+      const filteredBookings = originalBookings.filter(
+        (booking) =>
+          booking.EmployeeDetails[0].emp_name
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          booking.EmployeeDetails[0].dept_name
+            .toLowerCase()
+            .includes(search.toLowerCase())
+      );
+      setBookings(filteredBookings);
+    }
+  }, [search]);
 
   useEffect(() => {
     if (filter) {
@@ -84,12 +104,15 @@ const BookingListFilter = ({ setBookings, usertype }) => {
             <option value="Analytics">Analytics</option>
             <option value="BA">BA</option>
             <option value="FrontEnd">FrontEnd</option>
-            <option value="Analytics">Backend nodejs</option>
-            <option value="Analytics">Backend Java</option>
+            <option value="Backend nodejs">Backend nodejs</option>
+            <option value="Backend Java">Backend Java</option>
           </select>
           <select
             className="form-select form-select-lg m-1 border-1 rounded-3"
-            onChange={(e) => setYear(e.target.value)}
+            onChange={(e) => {
+              setYear(e.target.value);
+              setFlag(true);
+            }}
             value={year}
           >
             <option value="2025">2025</option>
@@ -106,6 +129,7 @@ const BookingListFilter = ({ setBookings, usertype }) => {
               } else {
                 setMonth(e.target.value);
               }
+              setFlag(true);
             }}
           >
             {MonthNames.map((monthName, index) => (

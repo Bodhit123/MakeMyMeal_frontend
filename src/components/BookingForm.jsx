@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { addBooking } from "../app/bookingSlice";
 import { BaseUrl } from "../helper/Constant";
 import rangePlugin from "flatpickr/dist/plugins/rangePlugin";
-import { SuccessToast, ErrorToast } from "../components/Toast";
+import { successToast, errorToast } from "../components/Toast";
 
 export function BookingForm({ IsModelOpen, setModalOpen }) {
   const dispatch = useDispatch();
@@ -109,7 +109,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
       });
   
       const data = result.data
-      SuccessToast("Booking Done Successfully", {
+      successToast("Booking Done Successfully", {
         position: "top-right",
         style: { fontSize: "16px", fontWeight: "500" },
       });
@@ -117,7 +117,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
 
     } catch (error) {
       console.error("Error submitting form:", error);
-      ErrorToast(error.response?.data.message.description || "Failed to submit form", {
+      errorToast(error.response?.data.message.description || "Failed to submit form", {
         position: "top-right",
       });
     } finally {

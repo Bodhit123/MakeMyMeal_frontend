@@ -3,16 +3,12 @@ import ButtonWithDialog from "../components/ButtonWithDialog";
 import Navbar from "../components/Navbar";
 import BookingListFilter from "../components/BookingListFilter";
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import BookingList from "../components/BookingList";
 
 const Home = () => {
   const [currentType, setCurrentType] = useState("Employee");
   const [bookings, setBookings] = useState([]);
  
-  console.log(bookings);
-  console.log(currentType);
-
   return (
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">

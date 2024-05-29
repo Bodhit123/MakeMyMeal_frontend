@@ -1,11 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../images/logo-white.svg";
-import { SuccessToast } from "../components/Toast";
+import { successToast } from "../components/Toast";
 
 const Navbar = () => {
+  const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true); // State to track if navbar is collapsed
   const dropdownRef = useRef(null);
@@ -26,6 +27,10 @@ const Navbar = () => {
 
   const handleToggleCollapse = () => {
     setIsCollapsed(!isCollapsed); // Toggle the collapsed state
+  };
+
+  const getActiveClass = (path) => {
+    return location.pathname === path ? "active" : "";
   };
 
   return (
@@ -50,7 +55,7 @@ const Navbar = () => {
         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
           <li className="nav-item">
             <Link
-              className="nav-link active"
+              className={`nav-link ${getActiveClass("/calender")}`}
               aria-current="page"
               to="/calender"
             >
@@ -58,7 +63,10 @@ const Navbar = () => {
             </Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link" to="/home">
+            <Link
+              className={`nav-link ${getActiveClass("/home")}`}
+              to="/home"
+            >
               Booking List
             </Link>
           </li>
@@ -108,7 +116,7 @@ const Navbar = () => {
                       className="dropdown-item"
                       type="button"
                       onClick={() => {
-                        SuccessToast("Logout Successfully", {
+                        successToast("Logout Successfully", {
                           position: "top-right",
                           autoClose: 2000,
                         });

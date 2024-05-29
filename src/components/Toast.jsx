@@ -12,11 +12,11 @@ const defaultOptions = {
   progress: undefined,
 };
 
-export const SuccessToast = (message, options = {}) => {
+export const successToast = (message, options = {}) => {
   toast.success(`🦄 ${message}`, { ...defaultOptions, ...options });
 };
 
-export const ErrorToast = (message, options = {}) => {
+export const errorToast = (message, options = {}) => {
   toast.error(message, { ...defaultOptions, ...options });
 };
 

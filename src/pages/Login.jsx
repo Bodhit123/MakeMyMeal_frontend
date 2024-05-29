@@ -6,7 +6,7 @@ import logo from "../images/logo.svg";
 import { useNavigate } from "react-router-dom";
 import { inputValidationHandler, loginSchema } from "../helper/Validation";
 import { AuthContext } from "../Contexts/AuthContext";
-import { SuccessToast, ErrorToast } from "../components/Toast";
+import { successToast,errorToast } from "../components/Toast";
 
 function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +39,7 @@ function Login() {
         if (!response.ok) {
           throw new Error("Invalid email or password");
         }
-        SuccessToast("Login Successfully", {
+        successToast("Login Successfully", {
           position: "top-right",
           style: { fontSize: "18px", fontWeight: "500" },
         });
@@ -48,7 +48,7 @@ function Login() {
         history("/home", { state: { pass: result.data.password } });
       }
     } catch (e) {
-      ErrorToast(e.message, {
+      errorToast(e.message, {
         position: "top-right",
       });
     } finally {

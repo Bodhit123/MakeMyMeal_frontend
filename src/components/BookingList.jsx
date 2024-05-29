@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import Moment from "moment";
 import { extendMoment } from "moment-range";
-import { ErrorToast, SuccessToast } from "./Toast";
+import { errorToast, successToast } from "./Toast";
 import { deleteBooking } from "../app/bookingSlice";
 
 const BookingList = ({ bookings, usertype, setBookings }) => {
@@ -31,7 +31,7 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
     "Meal Dates",
     "Actions",
   ];
-  console.log(bookings);
+
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const deleteBookingHandler = async (id) => {
@@ -65,7 +65,7 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
       });
 
       const data = result.data;
-      SuccessToast("Booking Deleted Successfully", {
+      successToast("Booking Deleted Successfully", {
         position: "top-right",
         style: { fontSize: "16px", fontWeight: "500" },
       });
@@ -77,7 +77,7 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
       );
     } catch (error) {
       console.error("Error deleting booking:", error);
-      ErrorToast(
+      errorToast(
         error.response?.data.message.description || "Failed to delete booking ",
         {
           position: "top-right",
@@ -112,17 +112,31 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
                 currentPage * bookingsPerPage
               )
               .map((booking, index) => {
-                const {startDate,endDate} = booking.Dates;
-                const monthRange = moment.range(moment(startDate).startOf('month'),moment(startDate).endOf('month'))
+                const { startDate, endDate } = booking.Dates;
+                const monthRange = moment.range(
+                  moment(startDate).startOf("month"),
+                  moment(startDate).endOf("month")
+                );
                 let bookingRange;
-                if(monthRange.contains(endDate,{excludeEnd:false,excludeStart:false})){
-                   bookingRange = moment.range(moment(startDate),moment(endDate))
-                }
-                else bookingRange = moment.range(moment(startDate),moment(startDate).endOf('month'))
+                if (
+                  monthRange.contains(endDate, {
+                    excludeEnd: false,
+                    excludeStart: false,
+                  })
+                ) {
+                  bookingRange = moment.range(
+                    moment(startDate),
+                    moment(endDate)
+                  );
+                } else
+                  bookingRange = moment.range(
+                    moment(startDate),
+                    moment(startDate).endOf("month")
+                  );
                 const dayNumbers = Array.from(bookingRange.by("day")).map(
                   (date) => date.format("DD")
                 );
-                console.log(monthRange.start.format("MMMM-DD"),monthRange.end.format("MMMM-DD"), bookingRange.start.format("MMMM-DD"),bookingRange.end.format("MMMM-DD"));
+                // console.log(monthRange.start.format("MMMM-DD"),monthRange.end.format("MMMM-DD"), bookingRange.start.format("MMMM-DD"),bookingRange.end.format("MMMM-DD"));
                 return (
                   <tr key={index}>
                     {usertype === "Employee" ? (

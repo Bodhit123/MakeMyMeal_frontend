@@ -58,15 +58,20 @@ const Calender = () => {
       };
 
       const processBookings = (bookings, className) => {
+        // Calculate the month range at the top
+        const monthRange = moment.range(
+          moment(bookings[0].Dates.startDate).utc().startOf("month"),
+          moment(bookings[0].Dates.startDate).utc().endOf("month"),
+          { excludeEnd: false, excludeStart: false }
+        );
+        //Iterate through each booking document
         bookings.forEach((booking) => {
           const { MealCounts } = booking;
           const { startDate, endDate } = booking.Dates;
-          const monthRange = moment.range(
-            moment(startDate).utc().startOf("month"),
-            moment(startDate).utc().endOf("month"),
-            { excludeEnd: false, excludeStart: false }
-          );
-          const bookingRange = momentRange.range(moment(startDate).utc(), moment(endDate).utc()).snapTo("day");
+
+          const bookingRange = momentRange
+            .range(moment(startDate).utc(), moment(endDate).utc())
+            .snapTo("day");
           if (moment(startDate).isSame(moment(endDate), "day")) {
             // If start date is the same as end date, it's a single-day booking
             addEventForDate(startDate, MealCounts, className);
