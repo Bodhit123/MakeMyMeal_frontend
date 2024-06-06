@@ -1,18 +1,26 @@
 import axios from "axios";
+import moment from "moment";
+import flatpickr from "flatpickr";
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
-import flatpickr from "flatpickr";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addBooking } from "../app/bookingSlice";
 import { BaseUrl } from "../helper/Constant";
 import rangePlugin from "flatpickr/dist/plugins/rangePlugin";
 import { successToast, errorToast } from "../components/Toast";
+import { startOfWeekend } from "../helper/Holidays";
+import { selectDisabledDates } from "../app/disabledSlice";
 
 export function BookingForm({ IsModelOpen, setModalOpen }) {
   const dispatch = useDispatch();
+  const fetchDates = useSelector(selectDisabledDates).map((doc) => ({
+    from: moment(doc.Dates.from).format("YYYY-MM-DD"),
+    to: moment(doc.Dates.to).format("YYYY-MM-DD"),
+  }));
   const [employeeData, setEmployeeData] = useState(
     JSON.parse(localStorage.getItem("employees")) ?? []
   );
+  const [disableDates, setDisabledDates] = useState(fetchDates);
   const [selectAllEmployees, setSelectAllEmployees] = useState(false);
   const token = useContext(AuthContext).authData?.token;
   const [formData, setFormData] = useState({
@@ -94,53 +102,65 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
     e.preventDefault();
     try {
       const { BookingPerson, BookingCategory, Department, ...rest } = formData;
-      const bookingPersonKey = Object.entries(BookingPerson).find(([key, value]) => value === true)?.[0];
-      const bookingCategoryKey = Object.entries(BookingCategory).find(([key, value]) => value === true)?.[0];
-  
-      const result = await axios.post(`${BaseUrl}/booking`, {
-        BookingPerson: bookingPersonKey,
-        BookingCategory: bookingCategoryKey,
-        ...rest,
-      }, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const bookingPersonKey = Object.entries(BookingPerson).find(
+        ([key, value]) => value === true
+      )?.[0];
+      const bookingCategoryKey = Object.entries(BookingCategory).find(
+        ([key, value]) => value === true
+      )?.[0];
+
+      const result = await axios.post(
+        `${BaseUrl}/booking`,
+        {
+          BookingPerson: bookingPersonKey,
+          BookingCategory: bookingCategoryKey,
+          ...rest,
         },
-      });
-  
-      const data = result.data
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = result.data;
       successToast("Booking Done Successfully", {
         position: "top-right",
         style: { fontSize: "16px", fontWeight: "500" },
       });
-      dispatch(addBooking({ type: data.BookingPerson, count: data.TotalMeals }));
-
+      dispatch(
+        addBooking({ type: data.BookingPerson, count: data.TotalMeals })
+      );
     } catch (error) {
       console.error("Error submitting form:", error);
-      errorToast(error.response?.data.message.description || "Failed to submit form", {
-        position: "top-right",
-      });
+      errorToast(
+        error.response?.data.message.description || "Failed to submit form",
+        {
+          position: "top-right",
+        }
+      );
     } finally {
       setModalOpen(false);
     }
   };
-  //flatPicker date range selection is done here
+
+  // flatPicker date range selection is done here
   useEffect(() => {
     const flatpickrInstance = flatpickr("#demoDate", {
       plugins: [new rangePlugin({ input: "#endDate" })],
+      disable: [...disableDates, startOfWeekend],
       minDate: "today",
       altInput: true,
       altFormat: "F j, Y",
-      // mode: "range",
+      mode: "range",
       dateFormat: "Y-m-d", // Set the date display format
       onChange: (selectedDates, dateStr, instance) => {
         const start = new Date(selectedDates[0]);
         const end = new Date(selectedDates[1]);
         //only give values if disableDates property passed to flatPickerInstance
-        // const disabledDates = instance.config.disable;
-        
-        // Get the count of valid dates after removing disabled dates
-        // const validCount = countValidDates(start, end, HolidaysAndWeekends);
+        const Dates = instance.config.disable;
+        console.log(Dates);
 
         // Update the form data with the new selected dates and count
         setFormData((prev) => ({
@@ -148,17 +168,16 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
           Dates: {
             startDate: start,
             endDate: end,
-            // validDays: validCount,
           },
         }));
       },
     });
-    
+
     return () => {
       flatpickrInstance.destroy();
     };
-  }, []);
-  
+  }, [disableDates]);
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       try {
@@ -171,7 +190,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
             },
           }
         );
-        
+
         const result = response.data;
         setEmployeeData(result.data);
         localStorage.setItem("employees", JSON.stringify(result.data));
@@ -179,14 +198,13 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
         console.error("Error fetching employee data:", error);
       }
     }, 1000);
-    
+
     return () => {
       clearTimeout(timer);
       localStorage.removeItem("employees");
     };
   }, [formData.Department, token]);
-  
-  console.log(formData)
+
   return (
     <div>
       <div
@@ -297,6 +315,12 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
                   </div>
                 </div>
               </div>
+               {/* <DateRangePicker
+                   id="demo"
+                    disableDates = {disableDates}
+                    setData={setFormData}
+                    // Customize other props as needed (e.g., disableDates, minDate)
+                  /> */}
               <div className="form-group">
                 <label>Select Account</label>
                 <div className="search-wrapper">

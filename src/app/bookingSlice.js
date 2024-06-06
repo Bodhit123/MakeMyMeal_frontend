@@ -6,7 +6,7 @@ const initialState = {
     Rise: 0,
     Others: 0,
   },
-  Bookings:[]
+  Bookings:[],
 };
 
 const counterSlice = createSlice({

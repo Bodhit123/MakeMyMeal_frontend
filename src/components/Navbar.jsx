@@ -3,15 +3,69 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../images/logo-white.svg";
-import { successToast } from "../components/Toast";
+import { successToast, errorToast } from "../components/Toast";
+import { BaseUrl } from "../helper/Constant";
+import axios from "axios";
+
 
 const Navbar = () => {
   const location = useLocation();
+  const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true); // State to track if navbar is collapsed
   const dropdownRef = useRef(null);
   const signOut = useContext(AuthContext).signOut;
-
+  
+  const [formData, setFormData] = useState({
+    old_password: "",
+    password: "",
+    password_confirmation: "",
+  });
+  const token = useContext(AuthContext).authData?.token;
+  function resetForm() {
+    setFormData({
+      old_password: "",
+      password: "",
+      password_confirmation: "",
+    });
+  }
+  
+  function onChangeHandler (e) {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${BaseUrl}/change/password`,
+        formData,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const result = response.data;
+      console.log(result);
+      successToast("Password changed Successfully", {
+        position: "top-right",
+        style: { fontSize: "16px", fontWeight: "500" },
+      });
+      resetForm();
+      setPasswordModalOpen(false);
+    } catch (error) {
+      errorToast(
+        error.response?.data.message.description || "Failed to submit form",
+        { position: "top-right" }
+      );
+    }
+  };
   useEffect(() => {
     function handleClickOutside(event) {
       if (!dropdownRef.current || !dropdownRef.current.contains(event.target)) {
@@ -59,7 +113,7 @@ const Navbar = () => {
               aria-current="page"
               to="/calender"
             >
-              Calendar
+              DashBoard
             </Link>
           </li>
           <li className="nav-item">
@@ -68,6 +122,14 @@ const Navbar = () => {
               to="/home"
             >
               Booking List
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/settings")}`}
+              to="/settings"
+            >
+              Calendar
             </Link>
           </li>
         </ul>
@@ -107,6 +169,7 @@ const Navbar = () => {
                       className="dropdown-item"
                       data-toggle="modal"
                       data-target="#changepwdModal"
+                      onClick = {()=>setPasswordModalOpen(true)}
                     >
                       Change Password
                     </Link>
@@ -132,6 +195,99 @@ const Navbar = () => {
           </ul>
         </div>
       </div>
+       {/* <!-- Change Password Modal Start --> */}
+       {isPasswordModalOpen && (
+        <div
+          className="modal show fade d-block"
+          id="changepwdModal"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden={!isPasswordModalOpen}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Change Password
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                  onClick={() => {
+                    setPasswordModalOpen(false);
+                    resetForm();
+                  }}
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <form>
+                  <div className="form-group">
+                    <label htmlFor="old_password">
+                      Old Password<span className="extric">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      onChange={(e)=>onChangeHandler(e)}
+                      value={formData.old_password}
+                      className="form-control"
+                      id="old_password"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="password">
+                      New Password<span className="extric">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      className="form-control"
+                      onChange={(e)=>onChangeHandler(e)}
+                      id="password"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="password_confirmation">
+                      Confirm Password<span className="extric">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password_confirmation}
+                      onChange={(e)=>onChangeHandler(e)}
+                      className="form-control"
+                      id="password_confirmation"
+                    />
+                    {/* <div className="error-block">Error display here</div> */}
+                  </div>
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                  onClick={() => {
+                    setPasswordModalOpen(false);
+                    resetForm();
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={(e) => handleSubmit(e)}
+                >
+                  Save changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* <!-- End Change Password Modal--> */}
     </div>
   );
 };

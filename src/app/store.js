@@ -1,8 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit';
-import bookingReducer from './bookingSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import bookingReducer from "./bookingSlice";
+import disabledReducer from "./disabledSlice";
 
 export default configureStore({
   reducer: {
-    counter: bookingReducer,
+    booking: bookingReducer,
+    disabled: disabledReducer,
   },
 });

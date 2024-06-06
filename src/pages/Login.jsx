@@ -6,7 +6,7 @@ import logo from "../images/logo.svg";
 import { useNavigate } from "react-router-dom";
 import { inputValidationHandler, loginSchema } from "../helper/Validation";
 import { AuthContext } from "../Contexts/AuthContext";
-import { successToast,errorToast } from "../components/Toast";
+import { successToast, errorToast } from "../components/Toast";
 
 function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,9 @@ function Login() {
         });
 
         if (!response.ok) {
-          throw new Error("Invalid email or password");
+          const result = await response.json();
+          console.log(result.message.description);
+          throw new Error(result.message.description);
         }
         successToast("Login Successfully", {
           position: "top-right",
@@ -45,7 +47,7 @@ function Login() {
         });
         const result = await response.json();
         authContext.setUser({ user: result.data.user, token: result.token });
-        history("/home", { state: { pass: result.data.password } });
+        history("/calender", { state: { pass: result.data.password } });
       }
     } catch (e) {
       errorToast(e.message, {
@@ -62,7 +64,7 @@ function Login() {
       return { ...prev, [name]: value };
     });
   };
-  
+
   const togglePasswordVisibility = () => {
     setIsPasswordVisible((prev) => !prev);
   };

@@ -6,7 +6,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { extendMoment } from "moment-range";
 import { AuthContext } from "../Contexts/AuthContext";
@@ -21,6 +21,10 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { MonthNames, BaseUrl } from "../helper/Constant";
 import "../css/calender.css";
 import { setBookingCount } from "../app/bookingSlice";
+import LoadingSpinner from "../components/Spinner";
+import Footer from "../components/Footer";
+import { setDisabledDates, selectDisabledDates } from "../app/disabledSlice";
+import { convertToArray, startOfWeekend } from "./../helper/Holidays";
 
 const Calender = () => {
   let eventId = 0;
@@ -29,12 +33,37 @@ const Calender = () => {
   const token = useContext(AuthContext).authData?.token;
   const [counts, setCounts] = useState({});
   const [initialEvents, setInitialEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
+  const disabledList = useSelector(selectDisabledDates).map((doc) => ({
+    from: moment(doc.Dates.from).format("YYYY-MM-DD"),
+    to: moment(doc.Dates.to).format("YYYY-MM-DD"),
+  }));
 
+  useEffect(() => {
+    const fetchDisabledDates = async () => {
+      try {
+        const response = await axios.get(`${BaseUrl}/settings/dates/get`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = response.data;
+        dispatch(setDisabledDates(result.data));
+      } catch (error) {
+        console.error("Error fetching disabled dates:", error);
+      }
+    };
+
+    fetchDisabledDates();
+  }, [dispatch, token]);
+// console.log(disabledList)
   const generateEvents = useCallback(
-    (employeeBookings, riseBookings, othersBookings, month, year) => {
+    (employeeBookings, riseBookings, othersBookings) => {
       const events = [];
-      console.log(othersBookings, month, year);
 
       const addEventForDate = (date, title, className) => {
         const formattedDate = moment(date).format("YYYY-MM-DD");
@@ -47,7 +76,6 @@ const Calender = () => {
             parseInt(existingEvent.title) + title
           ).toString();
         } else {
-          // Generate number IDs for events
           events.push({
             id: (eventId++).toString(),
             title: title.toString(),
@@ -58,22 +86,36 @@ const Calender = () => {
       };
 
       const processBookings = (bookings, className) => {
-        // Calculate the month range at the top
-        const monthRange = moment.range(
-          moment(bookings[0].Dates.startDate).utc().startOf("month"),
-          moment(bookings[0].Dates.startDate).utc().endOf("month"),
-          { excludeEnd: false, excludeStart: false }
+        const monthStartDate = moment(bookings[0].Dates.startDate)
+          .utc()
+          .startOf("month");
+        const monthEndDate = moment(bookings[0].Dates.startDate)
+          .utc()
+          .endOf("month");
+        const monthRange = moment.range(monthStartDate, monthEndDate, {
+          excludeEnd: false,
+          excludeStart: false,
+        });
+
+        const disabledDatesForMonth = convertToArray(
+          monthStartDate,
+          monthEndDate,
+          [...disabledList, startOfWeekend]
         );
-        //Iterate through each booking document
+
         bookings.forEach((booking) => {
           const { MealCounts } = booking;
           const { startDate, endDate } = booking.Dates;
-
           const bookingRange = momentRange
             .range(moment(startDate).utc(), moment(endDate).utc())
             .snapTo("day");
-          if (moment(startDate).isSame(moment(endDate), "day")) {
-            // If start date is the same as end date, it's a single-day booking
+
+          if (
+            moment(startDate).isSame(moment(endDate), "day") &&
+            !disabledDatesForMonth.includes(
+              moment(startDate).format("YYYY-MM-DD")
+            )
+          ) {
             addEventForDate(startDate, MealCounts, className);
           } else {
             for (const day of monthRange.by("day")) {
@@ -81,7 +123,10 @@ const Calender = () => {
                 bookingRange.contains(day, {
                   excludeEnd: false,
                   excludeStart: false,
-                })
+                }) &&
+                !disabledDatesForMonth.includes(
+                  moment(day).format("YYYY-MM-DD")
+                )
               ) {
                 if (className === "others-booking") {
                   const title = MealCounts;
@@ -95,13 +140,15 @@ const Calender = () => {
         });
       };
 
-      processBookings(employeeBookings, "employee-booking");
-      processBookings(riseBookings, "rise-booking");
-      processBookings(othersBookings, "others-booking");
+      if (disabledList.length > 0) {
+        processBookings(employeeBookings, "employee-booking");
+        processBookings(riseBookings, "rise-booking");
+        processBookings(othersBookings, "others-booking");
+      }
 
       return events;
     },
-    [eventId, momentRange]
+    [eventId, momentRange, disabledList]
   );
 
   const fetchCounts = useCallback(
@@ -118,53 +165,59 @@ const Calender = () => {
         );
 
         const fetchedResults = response.data;
-        console.log(fetchedResults);
         setCounts(fetchedResults.Counts);
         dispatch(setBookingCount(fetchedResults.Counts));
 
         const { employeeBookings, riseBookings, othersBookings } =
           fetchedResults;
-
-        const Events = generateEvents(
+        const events = generateEvents(
           employeeBookings,
           riseBookings,
-          othersBookings,
-          month,
-          year
+          othersBookings
         );
-
-        setInitialEvents(Events);
+        setInitialEvents(events);
+        setLoading(false);
       } catch (error) {
         console.error(
           "Error fetching bookings:",
           error.response || error.message
         );
+        setLoading(false);
       }
     },
     [dispatch, generateEvents, token]
   );
 
   useEffect(() => {
+    const currentDate = new Date();
+    const month = MonthNames[currentDate.getMonth() + 1];
+    const year = currentDate.getFullYear().toString();
     if (token) {
-      fetchCounts("May", "2024");
+      fetchCounts(month, year);
     }
   }, [token]);
 
   const handleDatesSet = ({ start }) => {
-    const month = MonthNames[start.getMonth() + 2]; //because MonthNames array has one more string "all" at the index 0 and getMonth is 0 based indexing.
+    const month = MonthNames[start.getMonth() + 2];
     const year = start.getFullYear();
     fetchCounts(month, year);
-    console.log(`Fetching data for ${month} ${year}`);
   };
+
+  if (loading) {
+    return (
+      <div className="loading-container-calendar">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container-fluid">
-          <Navbar />
+          <Navbar setPasswordModalOpen={setIsOpen}/>
         </div>
       </nav>
-
       <div className="container-fluid">
         <div className="calendar-wrapper">
           <div className="container">
@@ -187,11 +240,6 @@ const Calender = () => {
                   dayMaxEvents={4}
                   events={initialEvents}
                   datesSet={handleDatesSet}
-                  // initialEvents={initialEvents} // alternatively, use the `events` setting to fetch from a feed
-                  // select={handleDateSelect}
-                  // eventContent={renderEventContent} // custom render function
-                  // eventClick={handleEventClick}
-                  // eventsSet={handleEvents} // called after events are initialized/added/changed/removed
                 />
               </div>
               <div className="col-lg-3">
@@ -253,28 +301,7 @@ const Calender = () => {
           </div>
         </div>
       </div>
-
-      <div className="footer">
-        <div className="container">
-          <div className="footer-block">
-            <p>Copyright © 2022 Rishabh Software. All Rights Reserved.</p>
-            <div className="social">
-              <a href="#" aria-label="Facebook">
-                <i className="icon-facebook"></i>
-              </a>
-              <a href="#" aria-label="Instagram">
-                <i className="icon-instagram"></i>
-              </a>
-              <a href="#" aria-label="Linkedin">
-                <i className="icon-linkedin"></i>
-              </a>
-              <a href="#" aria-label="Twitter">
-                <i className="icon-twitter"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 };

@@ -2,12 +2,13 @@ import axios from "axios";
 import { BaseUrl } from "../helper/Constant";
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
-import { useDispatch } from "react-redux";
+import { useDispatch} from "react-redux";
 import Swal from "sweetalert2";
 import Moment from "moment";
 import { extendMoment } from "moment-range";
 import { errorToast, successToast } from "./Toast";
 import { deleteBooking } from "../app/bookingSlice";
+
 
 const BookingList = ({ bookings, usertype, setBookings }) => {
   const dispatch = useDispatch();
@@ -136,7 +137,7 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
                 const dayNumbers = Array.from(bookingRange.by("day")).map(
                   (date) => date.format("DD")
                 );
-                // console.log(monthRange.start.format("MMMM-DD"),monthRange.end.format("MMMM-DD"), bookingRange.start.format("MMMM-DD"),bookingRange.end.format("MMMM-DD"));
+                console.log(monthRange.start.format("MMMM-DD"),monthRange.end.format("MMMM-DD"), bookingRange.start.format("MMMM-DD"),bookingRange.end.format("MMMM-DD"));
                 return (
                   <tr key={index}>
                     {usertype === "Employee" ? (

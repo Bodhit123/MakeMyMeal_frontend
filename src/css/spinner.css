@@ -32,3 +32,10 @@
   right: 40%;
   z-index: 9999;
 }
+
+.loading-container-calendar{
+  position: fixed;
+  top: 50%;
+  right: 50%;
+  z-index: 9999;
+}
