@@ -2,17 +2,16 @@ import axios from "axios";
 import { BaseUrl } from "../helper/Constant";
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
-import { useDispatch} from "react-redux";
+import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
-import Moment from "moment";
 import { extendMoment } from "moment-range";
 import { errorToast, successToast } from "./Toast";
 import { deleteBooking } from "../app/bookingSlice";
 
-
 const BookingList = ({ bookings, usertype, setBookings }) => {
+  const moment = require("moment");
   const dispatch = useDispatch();
-  const moment = extendMoment(Moment);
+  const momentRange = extendMoment(moment);
   const token = useContext(AuthContext).authData?.token;
   const [currentPage, setCurrentPage] = useState(1);
   const [bookingsPerPage] = useState(3);
@@ -34,7 +33,7 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
   ];
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
+  console.log(bookings);
   const deleteBookingHandler = async (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -114,30 +113,33 @@ const BookingList = ({ bookings, usertype, setBookings }) => {
               )
               .map((booking, index) => {
                 const { startDate, endDate } = booking.Dates;
-                const monthRange = moment.range(
+                const monthRange = momentRange.range(
                   moment(startDate).startOf("month"),
                   moment(startDate).endOf("month")
                 );
+                // console.log( monthRange.start.format("YYYY-MM-DD"))
+                // console.log( monthRange.end.format("YYYY-MM-DD"))
                 let bookingRange;
                 if (
-                  monthRange.contains(endDate, {
+                  monthRange.contains(moment(endDate), {
                     excludeEnd: false,
                     excludeStart: false,
                   })
                 ) {
-                  bookingRange = moment.range(
+                  bookingRange = momentRange.range(
                     moment(startDate),
                     moment(endDate)
                   );
                 } else
-                  bookingRange = moment.range(
+                  bookingRange = momentRange.range(
                     moment(startDate),
                     moment(startDate).endOf("month")
                   );
+                // console.log(bookingRange.start.format("YYYY-MM-DD"))
+                // console.log(bookingRange.end.format("YYYY-MM-DD"))
                 const dayNumbers = Array.from(bookingRange.by("day")).map(
                   (date) => date.format("DD")
                 );
-                console.log(monthRange.start.format("MMMM-DD"),monthRange.end.format("MMMM-DD"), bookingRange.start.format("MMMM-DD"),bookingRange.end.format("MMMM-DD"));
                 return (
                   <tr key={index}>
                     {usertype === "Employee" ? (

@@ -34,7 +34,6 @@ const Calender = () => {
   const [counts, setCounts] = useState({});
   const [initialEvents, setInitialEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
   const disabledList = useSelector(selectDisabledDates).map((doc) => ({
     from: moment(doc.Dates.from).format("YYYY-MM-DD"),
@@ -60,7 +59,7 @@ const Calender = () => {
 
     fetchDisabledDates();
   }, [dispatch, token]);
-// console.log(disabledList)
+  // console.log(disabledList)
   const generateEvents = useCallback(
     (employeeBookings, riseBookings, othersBookings) => {
       const events = [];
@@ -84,8 +83,10 @@ const Calender = () => {
           });
         }
       };
-
+ 
       const processBookings = (bookings, className) => {
+        if (!bookings || bookings.length === 0) return;
+        
         const monthStartDate = moment(bookings[0].Dates.startDate)
           .utc()
           .startOf("month");
@@ -163,7 +164,7 @@ const Calender = () => {
             },
           }
         );
-
+        console.log(month, year);
         const fetchedResults = response.data;
         setCounts(fetchedResults.Counts);
         dispatch(setBookingCount(fetchedResults.Counts));
@@ -175,7 +176,9 @@ const Calender = () => {
           riseBookings,
           othersBookings
         );
+        console.log(events)
         setInitialEvents(events);
+        console.log(fetchedResults);
         setLoading(false);
       } catch (error) {
         console.error(
@@ -215,7 +218,7 @@ const Calender = () => {
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container-fluid">
-          <Navbar setPasswordModalOpen={setIsOpen}/>
+          <Navbar />
         </div>
       </nav>
       <div className="container-fluid">

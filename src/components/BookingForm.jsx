@@ -20,7 +20,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
   const [employeeData, setEmployeeData] = useState(
     JSON.parse(localStorage.getItem("employees")) ?? []
   );
-  const [disableDates, setDisabledDates] = useState(fetchDates);
+  const [disableDates] = useState(fetchDates);
   const [selectAllEmployees, setSelectAllEmployees] = useState(false);
   const token = useContext(AuthContext).authData?.token;
   const [formData, setFormData] = useState({
@@ -99,6 +99,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
   };
 
   const formSubmitHandler = async (e) => {
+    setModalOpen(false);
     e.preventDefault();
     try {
       const { BookingPerson, BookingCategory, Department, ...rest } = formData;
@@ -141,7 +142,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
         }
       );
     } finally {
-      setModalOpen(false);
+      console.log("done");
     }
   };
 
@@ -315,7 +316,7 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
                   </div>
                 </div>
               </div>
-               {/* <DateRangePicker
+              {/* <DateRangePicker
                    id="demo"
                     disableDates = {disableDates}
                     setData={setFormData}

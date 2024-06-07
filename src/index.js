@@ -7,9 +7,7 @@ import { Provider } from "react-redux";
 import reportWebVitals from "./reportWebVitals";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import the CSS for react-toastify
-import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
-import "datatables.net";
-import "datatables.net-bs5";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
