@@ -1,16 +1,14 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import ButtonWithDialog from "../components/ButtonWithDialog";
 import Navbar from "../components/Navbar";
-import BookingListFilter from "../components/BookingListFilter";
 import React, { useState} from "react";
 import BookingListAndFilter from "../components/ListandFilter";
-import BookingList from "../components/BookingList";
 import Footer from "../components/Footer";
 
 const Home = () => {
   const [currentType, setCurrentType] = useState("Employee");
   const [bookings, setBookings] = useState([]);
-
+  console.log(bookings)
   return (
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">
@@ -55,12 +53,6 @@ const Home = () => {
               Others
             </a>
           </div>
-          {/* <BookingListFilter setBookings={setBookings} usertype={currentType} />
-          <BookingList
-            bookings={bookings}
-            usertype={currentType}
-            setBookings={setBookings}
-          /> */}
           <BookingListAndFilter usertype={currentType}/>
         </div>
       </div>

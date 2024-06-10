@@ -10,40 +10,87 @@
   font-display: block;
 }
 
-/* div.dt-container div.dt-search input {
-  margin-left: 1.5rem;
-  display: inline-block;
-  max-width: 250px;
-  height: 40px;
-  width: 200px !important;
+.dt-search {
   position: absolute;
-  right: 10%;
-  transform: translateY(-80px);
-  font-size: 16px;
+  right: 0;
+  top: -42px;
 }
 
 .dt-length {
   position: absolute;
-  left: 87.5%;
-  margin: -20px;
-  margin-right: 0;
+  bottom: 5px;
+  right: 30%;
+}
+
+.dt-length:before {
+  content: "Items per page:";
+  margin-right: 4px;
+}
+
+div.dt-container select.dt-input {
+  padding: 10px;
+}
+
+.dt-length label {
+  display: none;
+}
+
+div#bookingTable_info {
+  position: absolute;
+  right: 20%;
+  bottom: 12px;
 }
 
 @media only screen and (max-width: 868px) {
   .dt-length {
-    left: 78%;
+    left: -120px;
+    bottom: 4px;
+    font-size: small;
   }
 
-  div.dt-container div.dt-search input {
-    transform: translateY(-30px);
-    left: 22px;
-    width:60px;
+  .dt-search {
+    width: 20px;
+    left: 0;
+    top: -5px
+  }
+
+  div.dt-container select.dt-input {
+    padding: 6px;
+    margin: 2px;
+  }
+
+  div.dt-container .dt-paging {
+    position: relative;
+    left: 150px;
+    font-size: smaller;
+  }
+
+  div#bookingTable_info {
+    left: 80px;
+    bottom: 10px;
+    font-size: small;
   }
 }
 
-div.dt-container div.dt-search label {
-  display: none;
-} */
+@media only screen and (max-width: 999px) and (min-width: 868px) {
+  .dt-length {
+    right: 50%;
+    bottom: 4px;
+    font-size: small;
+  }
+
+  .dt-search {
+    width: 20px;
+    left: 0;
+    top: 0;
+  }
+
+  div#bookingTable_info {
+    right: 40%;
+    bottom: 10px;
+    font-size: small;
+  }
+}
 
 .custom-placeholder::placeholder {
   font-size: 17px !important;
@@ -14524,6 +14571,7 @@ img {
 
 .footer {
   background-color: #FFF;
+  margin-top: 15px;
   border-top: 1px solid rgba(112, 112, 112, 0.4);
 }
 
@@ -14904,6 +14952,18 @@ img {
 
 .form-group .search-wrapper .form-control {
   padding: 6px 12px 6px 45px;
+}
+
+@media only screen and (max-width: 868px) {
+  table.dataTable {
+    margin-top: 32px !important;
+  }
+}
+
+@media only screen and (max-width: 999px) and (min-width: 868px) {
+  table.dataTable {
+    margin-top: 40px !important;
+  }
 }
 
 /*# sourceMappingURL=main.css.map */
