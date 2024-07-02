@@ -47,7 +47,7 @@ function Login() {
         });
         const result = await response.json();
         authContext.setUser({ user: result.data.user, token: result.token });
-        history("/calender", { state: { pass: result.data.password } });
+        history("/home", { state: { pass: result.data.password } });
       }
     } catch (e) {
       errorToast(e.message, {

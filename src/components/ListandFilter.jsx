@@ -104,6 +104,10 @@ const BookingListAndFilter = ({ usertype }) => {
       columns: getColumns(usertype),
     });
 
+    if (usertype === "Rise") {
+      table.column(3).visible(false);
+      table.column(4).visible(false);
+    }
     // Place the buttons container where you want it to appear
     table.buttons().container().appendTo($(".buttons-container"));
     // Remove any existing click event handlers

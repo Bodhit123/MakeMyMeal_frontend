@@ -1,15 +1,15 @@
-import { useLocation, Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
-const PrivateRoutes = () => {
-  const { state } = useLocation();
+const PrivateRoutes = ({ children }) => {
+  const user = JSON.parse(localStorage.getItem("authData"));
 
   // Check if user is logged in
-  if (!state && !state.isAdmin) {
+  if (!user) {
     return <Navigate to="/" />;
   }
 
   // User is authorized to access the requested page
-  return <Outlet />;
+  return children;
 };
 
 export default PrivateRoutes;

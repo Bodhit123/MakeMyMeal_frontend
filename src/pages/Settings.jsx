@@ -14,18 +14,16 @@ import { selectDisabledDates, setDisabledDates } from "../app/disabledSlice";
 import { successToast, errorToast } from "../components/Toast";
 import $ from "jquery";
 
-
 const Settings = () => {
   const dispatch = useDispatch();
   const [updateFlag, setUpdateFlag] = useState(false);
   const [id, setId] = useState("");
-  const [listPerPage] = useState(3);
   const [isOpen, setIsOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const token = useContext(AuthContext).authData?.token;
-  const [disabledList, setDisabledList] = useState(
-    useSelector(selectDisabledDates)
-  ); //This is for showing in the Table
+  
+  // Use useSelector to get the Redux state
+  const disabledList = useSelector(selectDisabledDates);
+
   const [formData, setFormData] = useState({
     Dates: {
       startDate: new Date().toISOString(),
@@ -34,7 +32,7 @@ const Settings = () => {
     Reason: "",
     MealType: [],
   });
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   function resetForm() {
     setFormData({
       Dates: {
@@ -60,7 +58,7 @@ const Settings = () => {
       altFormat: "F j, Y",
       mode: "range",
       dateFormat: "Y-m-d", // Set the date display format
-      onChange: (selectedDates,dateStr,Instance) => {
+      onChange: (selectedDates, dateStr, Instance) => {
         const start = new Date(selectedDates[0]);
         const end = new Date(dateStr);
         setFormData((prev) => ({
@@ -93,7 +91,7 @@ const Settings = () => {
         position: "top-right",
         style: { fontSize: "16px", fontWeight: "500" },
       });
-      setDisabledList([...disabledList, result.data.setting]);
+      dispatch(setDisabledDates([...disabledList, result.data.setting]));
       setIsOpen(false);
     } catch (error) {
       errorToast(
@@ -150,9 +148,11 @@ const Settings = () => {
         }
       );
       const result = response.data;
-      setDisabledList((prev) =>
-        prev.map((item) =>
-          item._id === id ? result.data.DisableDocument : item
+      dispatch(
+        setDisabledDates(
+          disabledList.map((item) =>
+            item._id === id ? result.data.DisableDocument : item
+          )
         )
       );
       successToast("Setting updated Successfully", {
@@ -198,7 +198,9 @@ const Settings = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setDisabledList(disabledList.filter((item) => item._id !== id));
+      dispatch(
+        setDisabledDates(disabledList.filter((item) => item._id !== id))
+      );
     } catch (error) {
       console.error("Error deleting setting :", error);
       Swal.fire({
