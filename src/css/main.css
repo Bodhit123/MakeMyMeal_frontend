@@ -19,7 +19,7 @@
 .dt-length {
   position: absolute;
   bottom: 5px;
-  right: 30%;
+  right: 32%;
 }
 
 .dt-length:before {
@@ -43,7 +43,7 @@ div#bookingTable_info {
 
 @media only screen and (max-width: 868px) {
   .dt-length {
-    left: -120px;
+    left: 10px;
     bottom: 4px;
     font-size: small;
   }
@@ -61,13 +61,14 @@ div#bookingTable_info {
 
   div.dt-container .dt-paging {
     position: relative;
-    left: 150px;
+    left: 250px;
     font-size: smaller;
   }
 
   div#bookingTable_info {
-    left: 80px;
+    left: 180px;
     bottom: 10px;
+    margin-left:20px;
     font-size: small;
   }
 }
@@ -86,7 +87,7 @@ div#bookingTable_info {
   }
 
   div#bookingTable_info {
-    right: 40%;
+    right: 30%;
     bottom: 10px;
     font-size: small;
   }
