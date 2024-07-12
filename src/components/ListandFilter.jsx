@@ -590,13 +590,13 @@ export default BookingListAndFilter;
 //                       {usertype === "Employee" ? (
 //                         <>
 //                           <td>
-//                             {booking.EmployeeDetails?.[0]?.emp_code || "-"}
+//                             {booking.EmployeeDetails?.[0]?.emp_code }
 //                           </td>
 //                           <td>
-//                             {booking.EmployeeDetails?.[0]?.emp_name || "-"}
+//                             {booking.EmployeeDetails?.[0]?.emp_name }
 //                           </td>
 //                           <td>
-//                             {booking.EmployeeDetails?.[0]?.dept_name || "-"}
+//                             {booking.EmployeeDetails?.[0]?.dept_name}
 //                           </td>
 //                           <td>{booking.BookingCategory}</td>
 //                           <td>{booking.MealCounts}</td>

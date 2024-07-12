@@ -13,6 +13,8 @@ import { AuthContext } from "../Contexts/AuthContext";
 import { selectDisabledDates, setDisabledDates } from "../app/disabledSlice";
 import { successToast, errorToast } from "../components/Toast";
 import $ from "jquery";
+import "datatables.net-buttons";
+import "datatables.net-buttons/js/buttons.html5";
 
 const Settings = () => {
   const dispatch = useDispatch();
