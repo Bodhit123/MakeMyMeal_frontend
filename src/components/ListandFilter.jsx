@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect, useCallback } from "react";
-import axios from "axios";
-import { BaseUrl, MonthNames } from "../helper/Constant";
+import { MonthNames } from "../helper/Constant";
 import { AuthContext } from "../Contexts/AuthContext";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
@@ -10,9 +9,11 @@ import { deleteBooking } from "../app/bookingSlice";
 import $ from "jquery";
 import "datatables.net-buttons";
 import "datatables.net-buttons/js/buttons.html5";
+import UseAxiosPrivate from "../hooks/UseAxiosPrivate";
 
 const BookingListAndFilter = ({ usertype }) => {
   const moment = require("moment");
+  const axiosInstance = UseAxiosPrivate();
   const momentRange = extendMoment(moment);
   const dispatch = useDispatch();
   const token = useContext(AuthContext).authData?.token;
@@ -20,31 +21,28 @@ const BookingListAndFilter = ({ usertype }) => {
   const [department, setDepartment] = useState("All");
   const currentDate = new Date();
   const [year, setYear] = useState(currentDate.getFullYear().toString());
-  const [month, setMonth] = useState(MonthNames[currentDate.getMonth() + 1]);
+  const [month, setMonth] = useState("July");
   const [filter, setFilter] = useState(false);
-
   const fetchData = useCallback(async () => {
     try {
       let url;
       if (usertype === "Employee") {
-        url = `${BaseUrl}/booking/employee?dept=${department}&year=${year}&month=${month}`;
+        url = `/booking/employee?dept=${department}&year=${year}&month=${month}`;
       } else {
-        url = `${BaseUrl}/booking/rise?year=${year}&month=${month}`;
+        url = `/booking/rise?year=${year}&month=${month}`;
       }
 
-      const response = await axios.get(url, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const response = await axiosInstance.get(url, { withCredentials: true });
       const fetchedResults = response.data;
       setBookings(fetchedResults.data.fetchedBookingResults); // Update the displayed bookings
       setFilter(false);
     } catch (error) {
       if (error.response) {
         console.log(error.response.data.message.description);
+        errorToast("No bookings present for given month.", {
+          position: "top-right",
+        });
+        setFilter(false);
       } else {
         console.log("Error fetching bookings:", error.message);
       }
@@ -54,7 +52,7 @@ const BookingListAndFilter = ({ usertype }) => {
 
   useEffect(() => {
     fetchData();
-  }, [usertype, department, month, year, fetchData]);
+  }, [usertype, department, month, year, fetchData, filter]);
 
   useEffect(() => {
     if (filter) {
@@ -249,12 +247,7 @@ const BookingListAndFilter = ({ usertype }) => {
 
   const deleteApi = async (id) => {
     try {
-      const result = await axios.delete(`${BaseUrl}/booking/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const result = await axiosInstance.delete(`/booking/${id}`, {});
 
       const data = result.data;
       successToast("Booking Deleted Successfully", {

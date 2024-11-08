@@ -11,10 +11,21 @@ import {
   Outlet,
 } from "react-router-dom";
 import AddUser from "./pages/AddUser";
-import PrivateRoutes from "./components/PrivateRoute";
 import { AuthProvider } from "./Contexts/AuthProvider";
+import { fetchDisabledDates } from "./app/disabledSlice";
+import RequireAuth from "./components/RequireAuth";
+import PrivateRoutes from "./components/PrivateRoute";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import axios from "axios";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Dispatch the thunk with axiosPrivate when the app starts
+    dispatch(fetchDisabledDates(axios));
+  }, [dispatch]);
   return (
     <Router>
       <AuthProvider>

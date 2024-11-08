@@ -15,7 +15,6 @@ const Navbar = () => {
   const [isCollapsed, setIsCollapsed] = useState(true); // State to track if navbar is collapsed
   const dropdownRef = useRef(null);
   const signOut = useContext(AuthContext).signOut;
-  
   const [formData, setFormData] = useState({
     old_password: "",
     password: "",

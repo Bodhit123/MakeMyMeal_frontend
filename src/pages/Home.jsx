@@ -7,8 +7,6 @@ import Footer from "../components/Footer";
 
 const Home = () => {
   const [currentType, setCurrentType] = useState("Employee");
-  const [bookings, setBookings] = useState([]);
-  console.log(bookings)
   return (
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">
@@ -35,7 +33,6 @@ const Home = () => {
               href="#"
               onClick={() => {
                 setCurrentType("Employee");
-                setBookings([]);
               }}
             >
               Rishabh Employees
@@ -47,7 +44,6 @@ const Home = () => {
               href="#"
               onClick={() => {
                 setCurrentType("Rise");
-                setBookings([]);
               }}
             >
               Others

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import axios from "axios";
 import Swal from "sweetalert2";
 import moment from "moment";
 import flatpickr from "flatpickr";
@@ -15,17 +14,18 @@ import { successToast, errorToast } from "../components/Toast";
 import $ from "jquery";
 import "datatables.net-buttons";
 import "datatables.net-buttons/js/buttons.html5";
+import UseAxiosPrivate from "./../hooks/UseAxiosPrivate";
 
 const Settings = () => {
   const dispatch = useDispatch();
+  const axiosInstance = UseAxiosPrivate();
   const [updateFlag, setUpdateFlag] = useState(false);
   const [id, setId] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const token = useContext(AuthContext).authData?.token;
-  
+
   // Use useSelector to get the Redux state
   const disabledList = useSelector(selectDisabledDates);
-
   const [formData, setFormData] = useState({
     Dates: {
       startDate: new Date().toISOString(),
@@ -45,7 +45,7 @@ const Settings = () => {
       MealType: [],
     });
   }
-  //This is for flatpickr disable property
+  // This is for flatpickr disable property
   const disableDates = useSelector(selectDisabledDates).map((doc) => ({
     from: moment(doc.Dates.from).format("YYYY-MM-DD"),
     to: moment(doc.Dates.to).format("YYYY-MM-DD"),
@@ -77,16 +77,9 @@ const Settings = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        `${BaseUrl}/settings/dates/add`,
-        formData,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await axiosInstance.post(
+        `/settings/dates/add`,
+        formData
       );
       const result = response.data;
       successToast("Setting added Successfully", {
@@ -139,7 +132,7 @@ const Settings = () => {
 
   const UpdateApi = async (id) => {
     try {
-      const response = await axios.put(
+      const response = await axiosInstance.put(
         `${BaseUrl}/settings/dates/update/${id}`,
         formData,
         {
@@ -194,12 +187,7 @@ const Settings = () => {
 
   const deleteApi = async (id) => {
     try {
-      await axios.delete(`${BaseUrl}/settings/dates/remove/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axiosInstance.delete(`/settings/dates/remove/${id}`);
       dispatch(
         setDisabledDates(disabledList.filter((item) => item._id !== id))
       );
@@ -251,25 +239,24 @@ const Settings = () => {
     table.on("draw", () => {
       $("#settingTable tbody tr").css("height", "60px"); // Increase this value to set the desired height
     });
-    $("#settingTable tbody tr").css("height", "60px");
+
     // Handle delete button click
     $("#settingTable tbody").on("click", ".delete-btn", function () {
       const id = $(this).data("id");
       deleteSettingHandler(id);
     });
+
     // Handle update button click
     $("#settingTable tbody").on("click", ".update-btn", function () {
       const id = $(this).data("id");
       updateSettingHandler(id);
     });
 
-    // Cleanup function to remove event listeners when the component is unmounted
     return () => {
       // Remove all event listeners related to delete and update buttons
       $("#settingTable tbody").off("click", ".delete-btn");
       $("#settingTable tbody").off("click", ".update-btn");
 
-      // Destroy the DataTable instance
       table.destroy();
     };
   }, [disabledList]);

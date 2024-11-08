@@ -10,7 +10,6 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { extendMoment } from "moment-range";
 import { AuthContext } from "../Contexts/AuthContext";
-import axios from "axios";
 import Navbar from "../components/Navbar";
 import addButton1 from "../images/add-btn1.svg";
 import addButton2 from "../images/add-btn2.svg";
@@ -18,17 +17,19 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { MonthNames, BaseUrl } from "../helper/Constant";
+import { MonthNames } from "../helper/Constant";
 import "../css/calender.css";
 import { setBookingCount } from "../app/bookingSlice";
 import LoadingSpinner from "../components/Spinner";
 import Footer from "../components/Footer";
-import { setDisabledDates, selectDisabledDates } from "../app/disabledSlice";
+import { selectDisabledDates } from "../app/disabledSlice";
 import { convertToArray, startOfWeekend } from "./../helper/Holidays";
+import useAxiosPrivate from "./../hooks/UseAxiosPrivate";
 
 const Calender = () => {
   let eventId = 0;
   const calendarRef = useRef(null);
+  const axiosPrivate = useAxiosPrivate();
   const momentRange = extendMoment(moment);
   const token = useContext(AuthContext).authData?.token;
   const [counts, setCounts] = useState({});
@@ -40,26 +41,6 @@ const Calender = () => {
     to: moment(doc.Dates.to).format("YYYY-MM-DD"),
   }));
 
-  useEffect(() => {
-    const fetchDisabledDates = async () => {
-      try {
-        const response = await axios.get(`${BaseUrl}/settings/dates/get`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const result = response.data;
-        dispatch(setDisabledDates(result.data));
-      } catch (error) {
-        console.error("Error fetching disabled dates:", error);
-      }
-    };
-
-    fetchDisabledDates();
-  }, [dispatch, token]);
-  // console.log(disabledList)
   const generateEvents = useCallback(
     (employeeBookings, riseBookings, othersBookings) => {
       const events = [];
@@ -83,10 +64,10 @@ const Calender = () => {
           });
         }
       };
- 
+
       const processBookings = (bookings, className) => {
         if (!bookings || bookings.length === 0) return;
-        
+
         const monthStartDate = moment(bookings[0].Dates.startDate)
           .utc()
           .startOf("month");
@@ -155,14 +136,8 @@ const Calender = () => {
   const fetchCounts = useCallback(
     async (month, year) => {
       try {
-        const response = await axios.get(
-          `${BaseUrl}/booking/counts?month=${month}&year=${year}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await axiosPrivate.get(
+          `/booking/counts?month=${month}&year=${year}`
         );
         console.log(month, year);
         const fetchedResults = response.data;
@@ -176,7 +151,7 @@ const Calender = () => {
           riseBookings,
           othersBookings
         );
-        console.log(events)
+        console.log(events);
         setInitialEvents(events);
         console.log(fetchedResults);
         setLoading(false);
@@ -193,17 +168,16 @@ const Calender = () => {
 
   useEffect(() => {
     const currentDate = new Date();
-    const month = MonthNames[currentDate.getMonth() + 1];
-    const year = currentDate.getFullYear().toString();
     if (token) {
-      fetchCounts(month, year);
+      fetchCounts(
+        MonthNames[currentDate.getMonth() + 1],
+        currentDate.getFullYear().toString()
+      );
     }
   }, [token]);
 
   const handleDatesSet = ({ start }) => {
-    const month = MonthNames[start.getMonth() + 2];
-    const year = start.getFullYear();
-    fetchCounts(month, year);
+    fetchCounts(MonthNames[start.getMonth() + 2], start.getFullYear());
   };
 
   if (loading) {

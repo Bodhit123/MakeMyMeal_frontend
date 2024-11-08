@@ -1,19 +1,21 @@
 import React, { useContext, useState } from "react";
 import "../css/toast.css";
-import { BaseUrl } from "../helper/Constant";
 import LoadingSpinner from "../components/Spinner";
 import logo from "../images/logo.svg";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { inputValidationHandler, loginSchema } from "../helper/Validation";
 import { AuthContext } from "../Contexts/AuthContext";
 import { successToast, errorToast } from "../components/Toast";
+import axios from "./../api/axios";
 
 function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [FormData, setFormData] = useState({ email: "", password: "" });
-  const history = useNavigate();
+  const navigate = useNavigate();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const authContext = useContext(AuthContext);
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/home";
 
   const FormSubmitHandler = async (e) => {
     e.preventDefault();
@@ -23,31 +25,36 @@ function Login() {
       if (validationError) {
         throw new Error(validationError);
       } else {
-        // const hashedPassword = await HashPassword(FormData.password);
         setIsLoading(true);
-        const response = await fetch(`${BaseUrl}/login`, {
-          method: "POST",
-          body: JSON.stringify({
+
+        const response = await axios.post(
+          `/login`,
+          {
             email: FormData.email,
             password: FormData.password,
-          }),
-          headers: {
-            "Content-Type": "application/json",
           },
-        });
 
-        if (!response.ok) {
-          const result = await response.json();
-          console.log(result.message.description);
-          throw new Error(result.message.description);
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (response.status !== 200) {
+          console.log(response.data.message.description);
+          throw new Error(response.data.message.description);
         }
+
         successToast("Login Successfully", {
           position: "top-right",
           style: { fontSize: "18px", fontWeight: "500" },
         });
-        const result = await response.json();
-        authContext.setUser({ user: result.data.user, token: result.token });
-        history("/home", { state: { pass: result.data.password } });
+
+        const result = response.data;
+        authContext.setUser({
+          user: result.data.foundUser,
+          token: result.token,
+        });
+        navigate(from);
       }
     } catch (e) {
       errorToast(e.message, {
