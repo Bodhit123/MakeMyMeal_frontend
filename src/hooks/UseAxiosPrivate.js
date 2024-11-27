@@ -12,9 +12,9 @@ const useAxiosPrivate = () => {
       (config) => {
         if (!config.headers["authorization"]) {
           config.headers["authorization"] = `Bearer ${token}`;
-          console.log("Request Token:", config.headers["authorization"]);
+          // console.log("Request Token:", config.headers["authorization"]);
         }
-        console.log(config)
+        // console.log(config)
         return config;
       },
       (error) => {

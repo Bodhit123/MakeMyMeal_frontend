@@ -35,7 +35,7 @@ div.dt-container select.dt-input {
   display: none;
 }
 
-div#bookingTable_info {
+.dt-info {
   position: absolute;
   right: 20%;
   bottom: 12px;
@@ -65,7 +65,7 @@ div#bookingTable_info {
     font-size: smaller;
   }
 
-  div#bookingTable_info {
+  .dt-info {
     left: 180px;
     bottom: 10px;
     margin-left:20px;
@@ -113,6 +113,12 @@ table.dataTable.nowrap td {
   white-space: wrap !important;
   max-width: 115px !important;
   min-width: 115px !important;
+}
+
+table.dataTable thead > tr > th.dt-orderable-asc, table.dataTable thead > tr > th.dt-orderable-desc, 
+table.dataTable thead > tr > td.dt-orderable-asc, table.dataTable thead > tr > td.dt-orderable-desc
+{
+ place-content: center;
 }
 
 .dropdown {

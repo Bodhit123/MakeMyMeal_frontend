@@ -205,6 +205,7 @@ const Settings = () => {
     const table = $("#settingTable").DataTable({
       data: disabledList,
       responsive: true,
+      autoWidth:false,
       language: {
         info: "_START_  -  _END_ of _TOTAL_ items",
       },
@@ -251,7 +252,7 @@ const Settings = () => {
       const id = $(this).data("id");
       updateSettingHandler(id);
     });
-
+   
     return () => {
       // Remove all event listeners related to delete and update buttons
       $("#settingTable tbody").off("click", ".delete-btn");
@@ -290,7 +291,7 @@ const Settings = () => {
               top: "0",
             }}
           >{`Total counts: ${disabledList.length}`}</h5>
-          <section className="container-fluid mt-3">
+          <section className="mt-3">
             <table
               id="settingTable"
               className="table table-responsive dataTable nowrap table-hover"

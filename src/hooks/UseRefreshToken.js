@@ -9,7 +9,7 @@ const UseRefreshToken = () => {
     try {
       const response = await axios.get("/refresh", { withCredentials: true });
       const accessToken = response.data.accessToken;
-      console.log(accessToken);
+      // console.log(accessToken);
       authContext.setUser((prev) => ({
         ...prev,
         token: accessToken, // Store token in memory only

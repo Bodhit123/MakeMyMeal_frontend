@@ -1,17 +1,18 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import ButtonWithDialog from "../components/ButtonWithDialog";
 import Navbar from "../components/Navbar";
-import React, { useState} from "react";
+import React, { useState } from "react";
 import BookingListAndFilter from "../components/ListandFilter";
 import Footer from "../components/Footer";
 
 const Home = () => {
   const [currentType, setCurrentType] = useState("Employee");
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container-fluid">
-          <Navbar/>
+          <Navbar />
         </div>
       </nav>
       {/* <!-- Navbar End --> */}
@@ -49,7 +50,7 @@ const Home = () => {
               Others
             </a>
           </div>
-          <BookingListAndFilter usertype={currentType}/>
+          <BookingListAndFilter usertype={currentType} />
         </div>
       </div>
       {/* <!-- footer start--> */}
