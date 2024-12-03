@@ -7,6 +7,8 @@ import Footer from "../components/Footer";
 
 const Home = () => {
   const [currentType, setCurrentType] = useState("Employee");
+  const [BookingFormOpen, setBookingFormOpen] = useState(false);
+  console.log(BookingFormOpen,currentType)
 
   return (
     <div>
@@ -23,7 +25,9 @@ const Home = () => {
               <h3 className="container-title">Booking List</h3>
             </div>
             <div className="container-right">
-              <ButtonWithDialog />
+              <ButtonWithDialog 
+              BookingFormOpen={BookingFormOpen}
+              setBookingFormOpen={setBookingFormOpen} /> 
             </div>
           </div>
           <div className="content-tab">
@@ -50,7 +54,7 @@ const Home = () => {
               Others
             </a>
           </div>
-          <BookingListAndFilter usertype={currentType} />
+          <BookingListAndFilter usertype={currentType}  />
         </div>
       </div>
       {/* <!-- footer start--> */}

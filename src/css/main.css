@@ -6212,16 +6212,47 @@ fieldset:disabled .btn {
 .modal {
   position: fixed;
   top: 0;
-  left: 0px;
+  left: 0;
   z-index: 1060;
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   outline: 0;
   backdrop-filter: brightness(0.5);
-  -webkit-backdrop-filter: brightness(0.5);
+  transition: opacity 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+  animation: slideInRight 0.6s ease forwards !important;
+}
+
+.modal.hide .modal-dialog {
+  animation: slideOutRight 0.3s ease forwards !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
 .modal-dialog {
@@ -6243,7 +6274,6 @@ fieldset:disabled .btn {
 }
 
 .modal.show .modal-dialog {
-  transform: none;
   position: fixed;
   right: 0;
   top: -28px;

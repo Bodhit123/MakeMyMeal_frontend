@@ -10,11 +10,11 @@ const UseRefreshToken = () => {
       const response = await axios.get("/refresh", { withCredentials: true });
       const accessToken = response.data.accessToken;
       // console.log(accessToken);
-      authContext.setUser((prev) => ({
-        ...prev,
-        token: accessToken, // Store token in memory only
-      }));
-
+      authContext.setUser({
+        ...authContext.authData,
+        token: accessToken,
+      });      
+      console.log(authContext) 
       return accessToken; // Provide token for immediate use
     } catch (error) {
       console.error("Token refresh failed:", error);

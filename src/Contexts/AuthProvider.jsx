@@ -66,15 +66,15 @@ export const AuthProvider = ({ children }) => {
   // });
   const [authData, setAuthData] = useState(null);
   // Fetch and set the token if user exists but token is missing (e.g., on page refresh)
-  // useEffect(() => {
-  //   const initializeAuth = async () => {
-  //     if (authData?.user && !authData?.token) {
-  //       const newToken = await refresh();
-  //       setAuthData((prev) => ({ ...prev, token: newToken }));
-  //     }
-  //   };
-  //   initializeAuth();
-  // }, [authData, refresh]);
+  useEffect(() => {
+    const initializeAuth = async () => {
+      if (authData?.user && !authData?.token) {
+        const newToken = await refresh();
+        setAuthData((prev) => ({ ...prev, token: newToken }));
+      }
+    };
+    initializeAuth();
+  }, [authData, refresh]);
  
   const setUser = ({ user, token }) => {
     localStorage.setItem(

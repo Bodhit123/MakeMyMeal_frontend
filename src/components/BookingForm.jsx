@@ -1,8 +1,7 @@
-import axios from "axios";
 import moment from "moment";
+import useAxiosPrivate from "../hooks/UseAxiosPrivate";
 import flatpickr from "flatpickr";
-import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../Contexts/AuthContext";
+import React, { useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addBooking } from "../app/bookingSlice";
 import { BaseUrl } from "../helper/Constant";
@@ -13,6 +12,7 @@ import { selectDisabledDates } from "../app/disabledSlice";
 
 export function BookingForm({ IsModelOpen, setModalOpen }) {
   const dispatch = useDispatch();
+  const axiosInstance = useAxiosPrivate();
   const fetchDates = useSelector(selectDisabledDates).map((doc) => ({
     from: moment(doc.Dates.from).format("YYYY-MM-DD"),
     to: moment(doc.Dates.to).format("YYYY-MM-DD"),
@@ -22,7 +22,6 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
   );
   const [disableDates] = useState(fetchDates);
   const [selectAllEmployees, setSelectAllEmployees] = useState(false);
-  const token = useContext(AuthContext).authData?.token;
   const [formData, setFormData] = useState({
     BookingPerson: { Employee: true, Rise: false, Others: false },
     BookingCategory: { Lunch: true, Dinner: false },
@@ -110,19 +109,13 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
         ([key, value]) => value === true
       )?.[0];
 
-      const result = await axios.post(
+      const result = await axiosInstance.post(
         `${BaseUrl}/booking`,
         {
           BookingPerson: bookingPersonKey,
           BookingCategory: bookingCategoryKey,
           ...rest,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
       );
 
       const data = result.data;
@@ -182,14 +175,8 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
   useEffect(() => {
     const timer = setTimeout(async () => {
       try {
-        const response = await axios.get(
-          `${BaseUrl}/employee/?searchQuery=${formData.Department}&limit=4`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await axiosInstance.get(
+          `/employee/?searchQuery=${formData.Department}&limit=4`
         );
 
         const result = response.data;
@@ -198,18 +185,18 @@ export function BookingForm({ IsModelOpen, setModalOpen }) {
       } catch (error) {
         console.error("Error fetching employee data:", error);
       }
-    }, 1000);
+    }, 0);
 
     return () => {
       clearTimeout(timer);
       localStorage.removeItem("employees");
     };
-  }, [formData.Department, token]);
+  }, [formData.Department]);
 
   return (
     <div>
       <div
-        className="modal show fade d-block"
+        className={`modal ${IsModelOpen ? "show" : "hide"} fade d-block`}
         id="addBookingModal"
         aria-labelledby="exampleModalLabel"
         aria-hidden={!IsModelOpen}

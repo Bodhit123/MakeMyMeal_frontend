@@ -3,6 +3,7 @@ import BookingForm from "./BookingForm";
 
 const ButtonWithDialog = () => {
   const [BookingFormOpen, setBookingFormOpen] = useState(false);
+  console.log(BookingFormOpen,"buttonwithdilogue")
   
   return (
     <>
