@@ -13,7 +13,6 @@ import {
 import AddUser from "./pages/AddUser";
 import { AuthProvider } from "./Contexts/AuthProvider";
 import { fetchDisabledDates } from "./app/disabledSlice";
-import RequireAuth from "./components/RequireAuth";
 import PrivateRoutes from "./components/PrivateRoute";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
