@@ -15,7 +15,7 @@ const BookingListAndFilter = ({ usertype }) => {
   const moment = require("moment");
   const location = useLocation();
   const tableRef = useRef(null);
-  const tableInstanceRef = useRef(null); // New ref for the DataTable instance
+  const tableInstanceRef = useRef(null);
   const buttonsRef = useRef(null);
   const axiosInstance = UseAxiosPrivate();
   const momentRange = extendMoment(moment);
@@ -27,7 +27,6 @@ const BookingListAndFilter = ({ usertype }) => {
   const [month, setMonth] = useState("July");
   const [filter, setFilter] = useState(false);
 
-  // Track previous values of department, year, and month
   const prevValuesRef = useRef({
     department: null,
     year: null,
@@ -58,18 +57,17 @@ const BookingListAndFilter = ({ usertype }) => {
   const fetchTableData = useCallback(
     async (data, callback, url, setFilter) => {
       try {
-        const searchTerm = data.search?.value || ""; // Get search input from DataTable
+        const searchTerm = data.search?.value || "";
 
         const response = await axiosInstance.post(
           url,
           {
             ...data,
-            search: searchTerm, // flatten search value
+            search: searchTerm,
           },
           { withCredentials: true }
         );
 
-        // Destructure correctly
         const {
           data: records,
           recordsTotal,
@@ -83,7 +81,6 @@ const BookingListAndFilter = ({ usertype }) => {
           });
         }
 
-        // ✅ Ensure callback uses correct filtered/total data
         callback({
           data: records,
           recordsTotal,
@@ -100,7 +97,6 @@ const BookingListAndFilter = ({ usertype }) => {
           recordsFiltered: 0,
         });
       } finally {
-        // Reset filter UI state
         if (tableInstanceRef.current) {
           setFilter(false);
         }
@@ -109,11 +105,19 @@ const BookingListAndFilter = ({ usertype }) => {
     [axiosInstance]
   );
 
-  // Check if any of department, year, or month has changed
   const hasFiltersChanged =
     prevValuesRef.current.department !== department ||
     prevValuesRef.current.year !== year ||
     prevValuesRef.current.month !== month;
+
+  const toggleMonthColumnVisibility = (tableInstance, shouldShow) => {
+    const monthColIndex = getColumns(usertype).findIndex(
+      (col) => col.title === "Month"
+    );
+    if (monthColIndex !== -1) {
+      tableInstance.column(monthColIndex).visible(shouldShow);
+    }
+  };
 
   useEffect(() => {
     const tableElement = $(tableRef.current);
@@ -123,39 +127,22 @@ const BookingListAndFilter = ({ usertype }) => {
         : `/booking/rise?year=${year}&month=${month}`;
 
     if (hasFiltersChanged || tableInstanceRef.current?.usertype !== usertype) {
-      // Update the ref with the current values
-      prevValuesRef.current = {
-        department: department,
-        year: year,
-        month: month,
-      };
+      prevValuesRef.current = { department, year, month };
     } else {
-      // Skip running if no filter change
-      // console.log(
-      //   "No changes detected in department, year, or month. Skipping DataTable initialization."
-      // );
       return;
     }
-    // Check if DataTable instance already exists
+
     if ($.fn.dataTable.isDataTable(tableElement)) {
       const tableInstance = tableInstanceRef.current?.tableInstance;
-
-      // If DataTable exists and usertype has changed, destroy and reinitialize
       if (tableInstance && tableInstanceRef.current?.usertype !== usertype) {
-        // console.log(
-        //   "Destroying and reinitializing DataTable due to usertype change"
-        // );
-        // Destroy the existing DataTable instance
         tableInstance.destroy();
-        // Reset the table instance reference
         tableInstanceRef.current = null;
       }
     }
 
-    // Initialize a new DataTable instance if none exists or after destruction
     if (!tableInstanceRef.current) {
       const table = tableElement.DataTable({
-        destroy: true, // Allow re-initialization
+        destroy: true,
         autoWidth: false,
         serverSide: true,
         processing: true,
@@ -163,7 +150,7 @@ const BookingListAndFilter = ({ usertype }) => {
         ajax: async (data, callback) => {
           fetchTableData(data, callback, url, setFilter);
         },
-        columns: getColumns(usertype), // Dynamically set columns based on usertype
+        columns: getColumns(usertype),
         buttons: [
           {
             extend: "csv",
@@ -180,11 +167,10 @@ const BookingListAndFilter = ({ usertype }) => {
           const api = this.api();
           const tableContainer = $(api.table().container());
 
-          // Check if there are no records and hide pagination and info
           if (api.rows().count() === 0) {
-            tableContainer.find(".dt-info").hide(); // Hide info (e.g., "Showing 1 to 10 of 0 entries")
-            tableContainer.find(".dt-length").hide(); // Hide length menu (e.g., "Show 10 entries")
-            tableContainer.find(".dt-pager").hide(); // Hide pagination (next/prev buttons)
+            tableContainer.find(".dt-info").hide();
+            tableContainer.find(".dt-length").hide();
+            tableContainer.find(".dt-pager").hide();
           } else {
             tableContainer.find(".dt-info").show();
             tableContainer.find(".dt-length").show();
@@ -192,7 +178,6 @@ const BookingListAndFilter = ({ usertype }) => {
           }
         },
         initComplete: function () {
-          // Ensure the buttons are appended to the custom container only after DataTable init
           if (buttonsRef.current) {
             const buttonContainer = $(buttonsRef.current).find(".dt-buttons");
             if (buttonContainer.length === 0) {
@@ -203,12 +188,13 @@ const BookingListAndFilter = ({ usertype }) => {
         },
       });
 
-      // Hide specific columns based on usertype
       if (usertype === "Rise") {
         table.column(3).visible(false);
         table.column(4).visible(false);
       }
-      // Handle delete action using event delegation
+
+      toggleMonthColumnVisibility(table, month === "");
+
       $("#bookingTable tbody").off("click", "i.bi-trash");
       $("#bookingTable tbody").on("click", "i.bi-trash", function () {
         const rowData = table.row($(this).closest("tr")).data();
@@ -218,23 +204,26 @@ const BookingListAndFilter = ({ usertype }) => {
           console.error("Failed to get row data.");
         }
       });
-      // Store the new DataTable instance
+
       tableInstanceRef.current = { tableInstance: table, usertype };
       console.log("New DataTable instance created.");
     } else {
-      // Reload the DataTable data if it exists and usertype hasn't changed
       const tableInstance = tableInstanceRef.current?.tableInstance;
       if (tableInstance) {
         console.log("Reloading data for existing DataTable instance");
-        // Update the ajax call to match usertype and filters
+
         tableInstance.settings()[0].ajax = async (data, callback) => {
           fetchTableData(data, callback, url, setFilter);
         };
-        tableInstance.ajax.reload(null, false); // Reload data without resetting the table
+
+        // ✅ Toggle visibility and force redraw
+        toggleMonthColumnVisibility(tableInstance, month === "");
+        tableInstance.columns.adjust().draw(false);
+
+        tableInstance.ajax.reload(null, false);
       }
     }
 
-    // Cleanup: Destroy the DataTable instance when leaving the page
     return () => {
       if (!location.pathname.includes("home")) {
         console.log("Destroying DataTable instance");
@@ -242,12 +231,9 @@ const BookingListAndFilter = ({ usertype }) => {
         tableInstanceRef.current = null;
       }
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usertype, filter, location.pathname]);
 
   useEffect(() => {
-    // Append buttons on every render
     const buttonContainer = $(buttonsRef.current).find(".dt-buttons");
     if (!buttonContainer.length) {
       const tableInstance = tableInstanceRef.current?.tableInstance;
@@ -259,7 +245,6 @@ const BookingListAndFilter = ({ usertype }) => {
     }
   }, [filter, usertype, month, year, department]);
 
-  console.log(buttonsRef.current, tableInstanceRef.current);
   const getColumns = (usertype) => {
     const commonColumns = [
       { title: "Meal Type", data: "BookingCategory" },
@@ -276,7 +261,7 @@ const BookingListAndFilter = ({ usertype }) => {
       {
         title: "Actions",
         data: null,
-        render: function (data, type, row) {
+        render: function () {
           return `<i class="bi bi-trash"</i>`;
         },
       },
@@ -462,32 +447,60 @@ export default BookingListAndFilter;
 //   const [month, setMonth] = useState("July");
 //   const [filter, setFilter] = useState(false);
 
-//   const fetchTableData = async (data, callback, url) => {
+//note: don't miss to pass draw to callback function
+// const fetchTableData = useCallback(
+//   async (data, callback, url, setFilter) => {
 //     try {
-//       const response = await axiosInstance.post(url, data, {
-//         withCredentials: true,
-//       });
-//       const { data: records, recordsTotal } = response.data;
-//       if (recordsTotal === 0) {
+//       const searchTerm = data.search?.value || ""; // Get search input from DataTable
+
+//       const response = await axiosInstance.post(
+//         url,
+//         {
+//           ...data,
+//           search: searchTerm, // flatten search value
+//         },
+//         { withCredentials: true }
+//       );
+
+//       // Destructure correctly
+//       const {
+//         data: records,
+//         recordsTotal,
+//         recordsFiltered,
+//         draw,
+//       } = response.data;
+
+//       if (recordsFiltered === 0) {
 //         errorToast("No data available for the selected filters.", {
 //           position: "top-right",
 //         });
 //       }
+
+//       // ✅ Ensure callback uses correct filtered/total data
 //       callback({
 //         data: records,
 //         recordsTotal,
-//         recordsFiltered: recordsTotal,
+//         recordsFiltered,
+//         draw,
 //       });
 //     } catch (error) {
 //       console.error("Error fetching data:", error);
 //       errorToast("Error fetching data", { position: "top-right" });
+
 //       callback({
 //         data: [],
 //         recordsTotal: 0,
 //         recordsFiltered: 0,
 //       });
+//     } finally {
+//       // Reset filter UI state
+//       if (tableInstanceRef.current) {
+//         setFilter(false);
+//       }
 //     }
-//   };
+//   },
+//   [axiosInstance]
+// );
 
 //   useEffect(() => {
 //     const tableElement = $(tableRef.current);
