@@ -193,6 +193,7 @@ const BookingListAndFilter = ({ usertype }) => {
         table.column(4).visible(false);
       }
 
+      // Apply conditional visibility for "Month" column
       toggleMonthColumnVisibility(table, month === "");
 
       $("#bookingTable tbody").off("click", "i.bi-trash");
@@ -216,9 +217,8 @@ const BookingListAndFilter = ({ usertype }) => {
           fetchTableData(data, callback, url, setFilter);
         };
 
-        // ✅ Toggle visibility and force redraw
+        // ✅ Toggle visibility
         toggleMonthColumnVisibility(tableInstance, month === "");
-        tableInstance.columns.adjust().draw(false);
 
         tableInstance.ajax.reload(null, false);
       }
