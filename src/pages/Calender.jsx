@@ -122,11 +122,9 @@ const Calender = () => {
         });
       };
 
-      if (disabledList.length > 0) {
-        processBookings(employeeBookings, "employee-booking");
-        processBookings(riseBookings, "rise-booking");
-        processBookings(othersBookings, "others-booking");
-      }
+      processBookings(employeeBookings, "employee-booking");
+      processBookings(riseBookings, "rise-booking");
+      processBookings(othersBookings, "others-booking");
 
       return events;
     },

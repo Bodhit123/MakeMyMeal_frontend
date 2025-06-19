@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MonthNames } from "../helper/Constant";
-import { useDispatch } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import { extendMoment } from "moment-range";
+import { selectDisabledDates } from "../app/disabledSlice";
+import { convertToArray, startOfWeekend } from "../helper/Holidays";
 import { errorToast, successToast } from "./Toast";
 import { deleteBooking } from "../app/bookingSlice";
 import UseAxiosPrivate from "../hooks/UseAxiosPrivate";
@@ -26,6 +28,11 @@ const BookingListAndFilter = ({ usertype }) => {
   const [year, setYear] = useState(currentDate.getFullYear().toString());
   const [month, setMonth] = useState("July");
   const [filter, setFilter] = useState(false);
+
+  const disabledList = useSelector(selectDisabledDates).map((doc) => ({
+    from: moment(doc.Dates.from).format("YYYY-MM-DD"),
+    to: moment(doc.Dates.to).format("YYYY-MM-DD"),
+  }));
 
   const prevValuesRef = useRef({
     department: null,
@@ -292,17 +299,15 @@ const BookingListAndFilter = ({ usertype }) => {
       .range(bookingStart, bookingEnd)
       .snapTo("day");
 
-    // grab the latest filter values
+    // grab the latest filter values (you already have this)
     const { month: fm, year: fy } = prevValuesRef.current;
 
-    // decide which month to display against:
+    // figure out which calendar‑month window we’re showing
     let monthStart, monthEnd;
     if (!fm) {
-      // “All” selected → use the booking’s own startDate month
       monthStart = bookingStart.clone().startOf("month");
       monthEnd = bookingStart.clone().endOf("month");
     } else {
-      // specific month/year filter
       const sel = moment(`${fy}-${fm}`, "YYYY-MMMM");
       if (!sel.isValid()) return "";
       monthStart = sel.clone().startOf("month");
@@ -310,16 +315,26 @@ const BookingListAndFilter = ({ usertype }) => {
     }
     const monthRange = momentRange.range(monthStart, monthEnd);
 
-    // collect intersecting days
+    const disabledDatesForMonth = convertToArray(monthStart, monthEnd, [
+      ...disabledList,
+      startOfWeekend,
+    ]);
+ 
+    // now collect only those days in the bookingRange ∩ monthRange, skipping disabled
     const days = [];
     for (const day of monthRange.by("day")) {
+      const dayStr = day.format("YYYY-MM-DD");
       if (
-        bookingRange.contains(day, { excludeStart: false, excludeEnd: false })
+        bookingRange.contains(day, {
+          excludeStart: false,
+          excludeEnd: false,
+        }) &&
+        !disabledDatesForMonth.includes(dayStr)
       ) {
         days.push(day.format("DD"));
       }
     }
-
+    
     return days.join(", ");
   };
 
