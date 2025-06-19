@@ -80,7 +80,7 @@ const BookingListAndFilter = ({ usertype }) => {
             position: "top-right",
           });
         }
-
+        console.log("Fetched records:", records);
         callback({
           data: records,
           recordsTotal,
@@ -220,7 +220,7 @@ const BookingListAndFilter = ({ usertype }) => {
         // ✅ Toggle visibility
         toggleMonthColumnVisibility(tableInstance, month === "");
 
-        tableInstance.ajax.reload(null, false);
+        tableInstance.ajax.reload(null, true);
       }
     }
 
@@ -286,31 +286,41 @@ const BookingListAndFilter = ({ usertype }) => {
 
   const renderMealDates = (data, type, row) => {
     const { startDate, endDate } = row.Dates;
-    const monthRange = momentRange.range(
-      moment(startDate).startOf("month"),
-      moment(startDate).endOf("month")
-    );
+    const bookingStart = moment(startDate).utc().startOf("day");
+    const bookingEnd = moment(endDate).utc().endOf("day");
+    const bookingRange = momentRange
+      .range(bookingStart, bookingEnd)
+      .snapTo("day");
 
-    let bookingRange;
-    if (
-      monthRange.contains(moment(endDate), {
-        excludeEnd: false,
-        excludeStart: false,
-      })
-    ) {
-      bookingRange = momentRange.range(moment(startDate), moment(endDate));
+    // grab the latest filter values
+    const { month: fm, year: fy } = prevValuesRef.current;
+
+    // decide which month to display against:
+    let monthStart, monthEnd;
+    if (!fm) {
+      // “All” selected → use the booking’s own startDate month
+      monthStart = bookingStart.clone().startOf("month");
+      monthEnd = bookingStart.clone().endOf("month");
     } else {
-      bookingRange = momentRange.range(
-        moment(startDate),
-        moment(startDate).endOf("month")
-      );
+      // specific month/year filter
+      const sel = moment(`${fy}-${fm}`, "YYYY-MMMM");
+      if (!sel.isValid()) return "";
+      monthStart = sel.clone().startOf("month");
+      monthEnd = sel.clone().endOf("month");
+    }
+    const monthRange = momentRange.range(monthStart, monthEnd);
+
+    // collect intersecting days
+    const days = [];
+    for (const day of monthRange.by("day")) {
+      if (
+        bookingRange.contains(day, { excludeStart: false, excludeEnd: false })
+      ) {
+        days.push(day.format("DD"));
+      }
     }
 
-    const dayNumbers = Array.from(bookingRange.by("day")).map((day) =>
-      day.format("D")
-    );
-
-    return dayNumbers.join(", ");
+    return days.join(", ");
   };
 
   const FilterForm = () => {
@@ -365,7 +375,9 @@ const BookingListAndFilter = ({ usertype }) => {
 
           <button
             className="btn btn-danger btn-lg"
-            onClick={() => setFilter(true)}
+            onClick={() => {
+              setFilter(true);
+            }}
           >
             Filter
           </button>
