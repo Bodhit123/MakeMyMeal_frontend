@@ -81,7 +81,7 @@ const BookingListAndFilter = ({ usertype }) => {
           recordsFiltered,
           draw,
         } = response.data;
-
+        console.log("Response data:", response.data);
         if (recordsFiltered === 0) {
           errorToast("No data available for the selected filters.", {
             position: "top-right",
