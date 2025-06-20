@@ -93,7 +93,7 @@ const Calender = () => {
       const process = (bookings, className, key, isBuffer = false) => {
         bookings.forEach(({ MealCounts, Dates: { startDate, endDate } }) => {
           const bookingRange = momentRange
-            .range(moment(startDate).utc(), moment(endDate).utc())
+            .range(moment(startDate), moment(endDate))
             .snapTo("day");
           for (const day of monthRange.by("day")) {
             const ds = day.format("YYYY-MM-DD");

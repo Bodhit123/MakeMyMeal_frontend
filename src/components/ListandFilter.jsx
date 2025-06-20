@@ -293,8 +293,8 @@ const BookingListAndFilter = ({ usertype }) => {
 
   const renderMealDates = (data, type, row) => {
     const { startDate, endDate } = row.Dates;
-    const bookingStart = moment(startDate).utc().startOf("day");
-    const bookingEnd = moment(endDate).utc().endOf("day");
+    const bookingStart = moment(startDate).startOf("day");
+    const bookingEnd = moment(endDate).endOf("day");
     const bookingRange = momentRange
       .range(bookingStart, bookingEnd)
       .snapTo("day");
